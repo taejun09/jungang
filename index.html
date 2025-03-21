@@ -544,20 +544,27 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // 학생 정보 불러오기 및 반영
     document.addEventListener("DOMContentLoaded", function () {
-    const name = sessionStorage.getItem("loggedInUser") || "홍길동";
-    const studentID = sessionStorage.getItem("studentID") || "2025";
-    const profileImage = sessionStorage.getItem("profileImage") || "https://ifh.cc/g/7qFrDt.png";
+        const name = localStorage.getItem("loggedInUser") || "홍길동";
+        const studentID = localStorage.getItem("studentID") || "2025";
+        const profileImage = localStorage.getItem("profileImage") || "https://ifh.cc/g/7qFrDt.png";
 
-    document.getElementById("studentName").innerText = name;
-    document.getElementById("studentID").innerText = `학번: ${studentID}`;
-    document.getElementById("studentPhoto").src = profileImage;
+        document.getElementById("studentName").innerText = name;
+        document.getElementById("studentID").innerText = `학번: ${studentID}`;
+        document.getElementById("studentPhoto").src = profileImage;
 
-    // QR 코드 생성 (스캔 시 인증 페이지로 이동)
-    const qrData = encodeURIComponent(`https://taejun09.github.io/jungang/verify.html?studentID=${studentID}`);
-    document.getElementById("qrCode").src = `https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${qrData}`;
-});
+        // QR 코드 생성 (스캔 시 인증 페이지로 이동)
+        const qrData = encodeURIComponent(`https://taejun09.github.io/jungang/verify.html?studentID=${studentID}`);
+        document.getElementById("qrCode").src = `https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${qrData}`;
+    });
 
+    // 학생 정보 저장 함수
+    function saveStudentInfo(name, studentID, profileImage) {
+        localStorage.setItem("loggedInUser", name);
+        localStorage.setItem("studentID", studentID);
+        localStorage.setItem("profileImage", profileImage);
+    }
 </script>
+
 
 
 <style>
