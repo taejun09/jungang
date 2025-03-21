@@ -687,12 +687,15 @@ document.addEventListener("DOMContentLoaded", function () {
         document.getElementById("studentID").innerText = `학번: ${studentID}`;
         document.getElementById("studentPhoto").src = profileImage;
 
-        // ✅ 랜덤 토큰 생성 & 저장
+        // ✅ 랜덤 토큰 생성 (다른 기기에서도 유효하도록 URL에 포함)
         const token = Math.random().toString(36).substr(2, 10);
-        sessionStorage.setItem(`token_${studentID}`, token); // 학생별 토큰 저장
 
         // ✅ QR 코드 URL에 token 포함
         const qrURL = `https://taejun09.github.io/jungang/verify.html?studentID=${studentID}&token=${token}`;
+
+        // ✅ 생성된 token을 sessionStorage에 저장 (QR 찍을 때 삭제할 거임)
+        sessionStorage.setItem("activeToken", token);
+
         document.getElementById("qrCode").src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(qrURL)}`;
     }
 });

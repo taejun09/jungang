@@ -26,16 +26,19 @@ async function verifyStudent() {
         return;
     }
 
-    // ✅ QR을 생성한 기기에서 저장한 토큰 가져오기
-    const storedToken = sessionStorage.getItem(`token_${studentID}`);
+    // ✅ sessionStorage에서 activeToken 가져오기 (스캔하면 바로 삭제)
+    const storedToken = sessionStorage.getItem("activeToken");
 
     if (!storedToken || storedToken !== token) {
         document.getElementById("result").innerText = "🚫 만료되었거나 올바르지 않은 접근입니다!";
         return;
     }
 
+    // ✅ 토큰 즉시 삭제 (다시 접속하면 무조건 만료됨)
+    sessionStorage.removeItem("activeToken");
+
     try {
-        const response = await fetch("https://script.googleusercontent.com/macros/echo?user_content_key=AehSKLglGrRAgk0WeMYmdIPAmpcWUWMuAOUwy3dszIm1qj_LUJWVOGtma7nSToxIb2WzNzSlUl_6ckqLxw98vz6POz0RHppVMUOW_HHnfxEGlUA8hl63dXe9dA8hLXVZODrOlQYpB58tZ4sTpPmvrJNSvTKS5Li381eZU-Ocga9Ip82eqYdxhfMczu9e38fNPnGz1KjRHOPN7xLBIx31LxtQy62Yz3rLD1x4bg67MSDG3zhxgBjBLMHrtfH2OCdtAaHRlxhmJd5m84XCMuv_PTLm4mzMj8_Tmg&lib=MIiTwKlDuBdmMmEehkb8j16Kr128tNxL1");
+        const response = await fetch("https://discord.com/api/webhooks/1352639043908665384/Y0dX7q6Gv3PxYOdAo_ZwWYMoxdRBZcxRlYiIJVqM9WoVtEVuOk708SIdii4vy_qENjZi");
         const validStudents = await response.json();
 
         const matchedEntry = validStudents.find(entry => entry.studentID && String(entry.studentID).trim() === studentID);
@@ -54,6 +57,10 @@ async function verifyStudent() {
         document.getElementById("result").innerText = "서버 오류 발생";
     }
 }
+
+// 페이지 로드 시 실행
+verifyStudent();
+
 
 function sendDiscordLog(name, studentID) {
     const webhookURL = "https://discord.com/api/webhooks/1352639043908665384/Y0dX7q6Gv3PxYOdAo_ZwWYMoxdRBZcxRlYiIJVqM9WoVtEVuOk708SIdii4vy_qENjZi";
