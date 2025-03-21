@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
     <title>군산중앙고등학교 기숙사</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
@@ -33,8 +33,26 @@
     </div>
 </div>
 <script>
+    (function() {
+        try {
+            // 로그인 정보 가져오기 (localStorage 사용)
+            const loggedInUser = localStorage.getItem("loggedInUser");
 
+            if (!loggedInUser) {
+                // 로그인 정보가 없으면 로그인 페이지로 이동
+                window.location.replace("https://taejun09.github.io/jungang/login/");
+            } else {
+                // 로그인된 경우 페이지 표시
+                document.body.style.display = "block";
+                document.getElementById("welcomeUser").innerText = `${loggedInUser}님`;
+            }
+        } catch (error) {
+            console.error("로그인 확인 중 오류 발생:", error);
+            window.location.replace("https://taejun09.github.io/jungang/login/");
+        }
+    })();
 </script>
+
 
 <script>
     // 노트북(1024px) 이상에서만 팝업 표시 및 블러 처리
@@ -468,50 +486,27 @@ document.addEventListener("DOMContentLoaded", function () {
     </div>
 </div>
 
-<style>
-    /* 전체 화면 모드 */
-    #fullscreen-card {
-        display: none;
-        position: fixed;
-        inset: 0;
-        background: #18181c;
-        z-index: 9999;
-        align-items: center;
-        justify-content: center;
-        flex-direction: column;
-    }
-
-    #fullscreen-card img {
-        width: 320px;
-        height: auto;
-    }
-
-    #close-fullscreen {
-        position: absolute;
-        top: 20px;
-        right: 20px;
-        color: white;
-        font-size: 24px;
-        cursor: pointer;
-    }
-</style>
-
-<!-- 가로 모드 전체 화면 -->
-<div id="fullscreen-card">
-    <span id="close-fullscreen">&times;</span>
-    <div class="relative w-[320px] h-[192px] perspective-1000" onclick="flipCard()">
-        <div id="fullscreen-studentCard" class="w-full h-full transition-transform duration-500 ease-in-out transform-style-preserve-3d">
+<!-- 모바일 학생증 -->
+<div class="bg-[#18181c] p-4 rounded-lg mb-4">
+    <h2 class="text-lg font-semibold mb-3 flex items-center text-[#D9D9D9]">
+        <i class="fas fa-id-card mr-2"></i> 모바일 학생증
+    </h2>
+    
+    <!-- 학생증 카드 (앞면/뒷면) -->
+    <div class="relative w-80 h-48 perspective-1000 mx-auto" onclick="flipCard()">
+        <div id="studentCard" class="w-full h-full transition-transform duration-500 ease-in-out transform-style-preserve-3d">
+            
             <!-- 앞면 -->
             <div class="absolute w-full h-full bg-[#1e1e22] rounded-xl shadow-lg flex items-center px-5 py-3 backface-hidden border border-[#33323A]">
-                <img id="fs-schoolLogo" src="https://taejun09.github.io/jungang/assets/image/jungang-main_logo.png" 
+                <img id="schoolLogo" src="https://taejun09.github.io/jungang/assets/image/jungang-main_logo.png" 
                      alt="학교 로고" class="w-14 h-14 rounded-full border-2 border-[#33323A] shadow-md">
                 <div class="ml-4 text-left text-[#D9D9D9]">
-                    <p id="fs-studentName" class="text-lg font-semibold">이름</p>
-                    <p id="fs-studentID" class="text-sm text-[#A0A0A0]">학번: </p>
+                    <p id="studentName" class="text-lg font-semibold">이름</p>
+                    <p id="studentID" class="text-sm text-[#A0A0A0]">학번: </p>
                     <p class="text-xs mt-1 text-[#7C7C7C]">중앙고등학교</p>
                 </div>
                 <div class="ml-auto">
-                    <img id="fs-studentPhoto" src="https://ifh.cc/g/7qFrDt.png" 
+                    <img id="studentPhoto" src="https://ifh.cc/g/7qFrDt.png" 
                          alt="학생 사진" class="w-16 h-16 rounded-lg border-2 border-[#33323A] shadow-md">
                 </div>
             </div>
@@ -521,7 +516,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 <p class="text-[#D9D9D9] text-sm font-semibold">발급 기관: 중앙고등학교</p>
                 <p class="text-[#A0A0A0] text-xs">유효기간: 2025년 12월 31일</p>
                 <div class="bg-[#18181c] p-2 rounded-lg mt-3 border border-[#33323A]">
-                    <img id="fs-qrCode" src="" alt="QR 코드" class="w-20 h-20">
+                    <img id="qrCode" src="" alt="QR 코드" class="w-20 h-20">
                 </div>
                 <p class="text-[#7C7C7C] text-xs mt-2">이 학생증은 본인 확인용입니다.</p>
             </div>
@@ -534,61 +529,23 @@ document.addEventListener("DOMContentLoaded", function () {
     function flipCard() {
         flipped = !flipped;
         document.getElementById("studentCard").style.transform = flipped ? "rotateY(180deg)" : "rotateY(0deg)";
-        document.getElementById("fullscreen-studentCard").style.transform = flipped ? "rotateY(180deg)" : "rotateY(0deg)";
     }
 
     // 학생 정보 불러오기 및 반영
     document.addEventListener("DOMContentLoaded", function () {
-        const name = sessionStorage.getItem("loggedInUser") || "홍길동";
-        const studentID = sessionStorage.getItem("studentID") || "2025";
-        const profileImage = sessionStorage.getItem("profileImage") || "https://ifh.cc/g/7qFrDt.png";
+    const name = sessionStorage.getItem("loggedInUser") || "홍길동";
+    const studentID = sessionStorage.getItem("studentID") || "2025";
+    const profileImage = sessionStorage.getItem("profileImage") || "https://ifh.cc/g/7qFrDt.png";
 
-        document.getElementById("studentName").innerText = name;
-        document.getElementById("studentID").innerText = `학번: ${studentID}`;
-        document.getElementById("studentPhoto").src = profileImage;
+    document.getElementById("studentName").innerText = name;
+    document.getElementById("studentID").innerText = `학번: ${studentID}`;
+    document.getElementById("studentPhoto").src = profileImage;
 
-        document.getElementById("fs-studentName").innerText = name;
-        document.getElementById("fs-studentID").innerText = `학번: ${studentID}`;
-        document.getElementById("fs-studentPhoto").src = profileImage;
+    // QR 코드 생성 (스캔 시 인증 페이지로 이동)
+    const qrData = encodeURIComponent(`https://taejun09.github.io/jungang/verify.html?studentID=${studentID}`);
+    document.getElementById("qrCode").src = `https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${qrData}`;
+});
 
-        // QR 코드 생성 (스캔 시 인증 페이지로 이동)
-        const qrData = encodeURIComponent(`https://taejun09.github.io/jungang/verify.html?studentID=${studentID}`);
-        document.getElementById("qrCode").src = `https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${qrData}`;
-        document.getElementById("fs-qrCode").src = `https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${qrData}`;
-    });
-
-    // 2번 흔들었을 때 가로 모드 전환
-    let lastShakeTime = 0;
-    let shakeCount = 0;
-    window.addEventListener("devicemotion", function (event) {
-        const acceleration = event.accelerationIncludingGravity;
-        const threshold = 15; // 흔들기 감도 (값이 클수록 강한 흔들기 필요)
-        
-        if (acceleration.x > threshold || acceleration.y > threshold || acceleration.z > threshold) {
-            const now = Date.now();
-            if (now - lastShakeTime < 800) {
-                shakeCount++;
-            } else {
-                shakeCount = 1;
-            }
-            lastShakeTime = now;
-
-            if (shakeCount >= 2) {
-                shakeCount = 0;
-                enterFullscreenMode();
-            }
-        }
-    });
-
-    // 전체 화면 진입
-    function enterFullscreenMode() {
-        document.getElementById("fullscreen-card").style.display = "flex";
-    }
-
-    // 전체 화면 닫기
-    document.getElementById("close-fullscreen").addEventListener("click", function () {
-        document.getElementById("fullscreen-card").style.display = "none";
-    });
 </script>
 
 
