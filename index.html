@@ -677,25 +677,21 @@ document.addEventListener("DOMContentLoaded", function () {
         document.getElementById("studentCard").style.transform = flipped ? "rotateY(180deg)" : "rotateY(0deg)";
     }
 
-    // 학생 정보 불러오기 및 반영
-    document.addEventListener("DOMContentLoaded", function () {
-    const name = sessionStorage.getItem("loggedInUser");
-    const studentID = sessionStorage.getItem("studentID");
-    const profileImage = sessionStorage.getItem("profileImage");
+    document.addEventListener("DOMContentLoaded", async function () {
+        const name = sessionStorage.getItem("loggedInUser");
+        const studentID = sessionStorage.getItem("studentID");
+        const profileImage = sessionStorage.getItem("profileImage");
 
-    if (name && studentID && profileImage) {
-        document.getElementById("studentName").innerText = name;
-        document.getElementById("studentID").innerText = `학번: ${studentID}`;
-        document.getElementById("studentPhoto").src = profileImage;
+        if (name && studentID && profileImage) {
+            document.getElementById("studentName").innerText = name;
+            document.getElementById("studentID").innerText = `학번: ${studentID}`;
+            document.getElementById("studentPhoto").src = profileImage;
 
-        const token = Math.random().toString(36).substr(2, 10);
-        localStorage.setItem("authToken", token);
-
-        const qrURL = `https://taejun09.github.io/jungang/verify.html?studentID=${studentID}&token=${token}`;
-        console.log("QR 코드 링크:", qrURL);
-        document.getElementById("qrCode").src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${qrURL}`;
-    }
-});
+            // QR 코드 생성 (서버에서 처리)
+            const qrURL = `https://taejun09.github.io/jungang/verify.html?studentID=${studentID}`;
+            document.getElementById("qrCode").src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${qrURL}`;
+        }
+    });
 </script>
 
 
