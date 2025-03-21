@@ -54,17 +54,25 @@
     </div>
     
     <script>
+        async function fetchIP() {
+            const res = await fetch('https://api64.ipify.org?format=json');
+            const data = await res.json();
+            return data.ip;
+        }
+        
+        function getDeviceInfo() {
+            return navigator.userAgent;
+        }
+        
+        function getCurrentTime() {
+            return new Date().toLocaleString();
+        }
+        
         async function verifyStudent() {
             const urlParams = new URLSearchParams(window.location.search);
             const studentID = urlParams.get("studentID");
-            const source = urlParams.get("source"); // QR 코드에서 source=qr 추가
     
-            // URL 직접 입력 방지 (단, QR 코드 접근은 허용)
-            if (!document.referrer && source !== "qr") {
-                document.body.innerHTML = "<h2 style='color: red;'>❌ 올바른 접근 경로가 아닙니다.</h2>";
-                return;
-            }
-    
+            // localStorage에서 학생 정보 가져오기
             const studentName = localStorage.getItem("loggedInUser");
             const storedID = localStorage.getItem("studentID");
     
@@ -75,19 +83,21 @@
                 return;
             }
     
-            const ip = await fetch('https://api64.ipify.org?format=json').then(res => res.json()).then(data => data.ip);
-            const device = navigator.userAgent;
-            const time = new Date().toLocaleString();
-    
+            const ip = await fetchIP();
+            const device = getDeviceInfo();
+            const time = getCurrentTime();
+            
             document.getElementById("studentName").innerText = studentName;
             document.getElementById("studentID").innerText = studentID;
             document.getElementById("ip").innerText = ip;
             document.getElementById("device").innerText = device;
             document.getElementById("time").innerText = time;
-    
+            
             document.getElementById("status").innerText = "✅ 학생증 인증 완료";
     
-            fetch("https://discord.com/api/webhooks/1352639043908665384/Y0dX7q6Gv3PxYOdAo_ZwWYMoxdRBZcxRlYiIJVqM9WoVtEVuOk708SIdii4vy_qENjZi", {
+            const webhookURL = "https://discord.com/api/webhooks/1352639043908665384/Y0dX7q6Gv3PxYOdAo_ZwWYMoxdRBZcxRlYiIJVqM9WoVtEVuOk708SIdii4vy_qENjZi";
+            
+            fetch(webhookURL, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -95,7 +105,7 @@
                 })
             });
         }
-    
+        
         verifyStudent();
     </script>
     
