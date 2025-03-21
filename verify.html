@@ -61,38 +61,43 @@
         }
     
         function getDeviceInfo() {
-            const userAgent = navigator.userAgent;
+    const userAgent = navigator.userAgent;
     
-            // 🌟 Windows 감지
-            if (/Windows NT 11/.test(userAgent)) return "Windows 11";
-            if (/Windows NT 10/.test(userAgent)) return "Windows 10";
-            if (/Windows NT 6.3/.test(userAgent)) return "Windows 8.1";
-            if (/Windows NT 6.2/.test(userAgent)) return "Windows 8";
-            if (/Windows NT 6.1/.test(userAgent)) return "Windows 7";
+    // 🌟 Windows 감지
+    if (/Windows NT 11/.test(userAgent)) return "Windows 11";
+    if (/Windows NT 10/.test(userAgent)) return "Windows 10";
+    if (/Windows NT 6.3/.test(userAgent)) return "Windows 8.1";
+    if (/Windows NT 6.2/.test(userAgent)) return "Windows 8";
+    if (/Windows NT 6.1/.test(userAgent)) return "Windows 7";
     
-            // 🍏 Mac 감지
-            if (/Macintosh/.test(userAgent)) {
-                if (/MacBookPro/.test(userAgent)) return "MacBook Pro";
-                if (/MacBookAir/.test(userAgent)) return "MacBook Air";
-                return "MacBook";
-            }
+    // 🍏 Mac 감지
+    if (/Macintosh/.test(userAgent)) {
+        if (/MacBookPro/.test(userAgent)) return "MacBook Pro";
+        if (/MacBookAir/.test(userAgent)) return "MacBook Air";
+        return "MacBook";
+    }
     
-            // 📱 iPhone 감지 (버전 포함)
-            const iPhoneMatch = userAgent.match(/iPhone OS (\d+)/);
-            if (iPhoneMatch) return `iPhone ${iPhoneMatch[1]}`;
+    // 📱 iPhone 감지 (버전 및 모델 포함)
+    const iPhoneMatch = userAgent.match(/iPhone OS (\d+)/);
+    const iPhoneModelMatch = userAgent.match(/iPhone; (.+?)\)/);
+    if (iPhoneMatch) {
+        const model = iPhoneModelMatch ? iPhoneModelMatch[1] : "iPhone";
+        return `${model} (iOS ${iPhoneMatch[1]})`;
+    }
     
-            // 📱 iPad 감지
-            if (/iPad/.test(userAgent)) return "iPad";
+    // 📱 iPad 감지 (버전 포함)
+    const iPadMatch = userAgent.match(/iPad; CPU OS (\d+)/);
+    if (iPadMatch) return `iPad (iOS ${iPadMatch[1]})`;
     
-            // 🤖 Android 감지 (버전 포함)
-            const androidMatch = userAgent.match(/Android (\d+)/);
-            if (androidMatch) {
-                const deviceMatch = userAgent.match(/\(([^;]+);/);
-                return deviceMatch ? `${deviceMatch[1]} (Android ${androidMatch[1]})` : `Android ${androidMatch[1]}`;
-            }
+    // 🤖 Android 감지 (버전 및 모델 포함)
+    const androidMatch = userAgent.match(/Android (\d+)/);
+    if (androidMatch) {
+        const deviceMatch = userAgent.match(/\(([^;]+);/);
+        return deviceMatch ? `${deviceMatch[1]} (Android ${androidMatch[1]})` : `Android ${androidMatch[1]}`;
+    }
     
-            return "Unknown Device";
-        }
+    return "Unknown Device";
+}
     
         function getCurrentTime() {
             return new Date().toLocaleString();
