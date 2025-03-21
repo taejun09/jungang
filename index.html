@@ -40,7 +40,7 @@
 
             if (!loggedInUser) {
                 // 로그인 정보가 없으면 즉시 로그인 페이지로 이동
-                window.location.replace("http://127.0.0.1:5500/login/index.html");
+                window.location.replace("https://taejun09.github.io/jungang/login/");
             } else {
                 // 로그인된 경우 페이지 표시
                 document.body.style.display = "block";
@@ -48,7 +48,7 @@
             }
         } catch (error) {
             console.error("로그인 확인 중 오류 발생:", error);
-            window.location.replace("http://127.0.0.1:5500/login/index.html");
+            window.location.replace("https://taejun09.github.io/jungang/login/");
         }
     })();
 </script>
