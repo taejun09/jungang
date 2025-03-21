@@ -553,8 +553,10 @@ document.addEventListener("DOMContentLoaded", function () {
         document.getElementById("studentPhoto").src = profileImage;
 
         // QR 코드 생성 (스캔 시 인증 페이지로 이동)
-        const qrData = encodeURIComponent(`https://taejun09.github.io/jungang/verify.html?studentID=${studentID}`);
-        document.getElementById("qrCode").src = `https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${qrData}`;
+       // QR 코드 생성 (스캔 시 인증 페이지로 이동)
+const qrData = encodeURIComponent(`https://taejun09.github.io/jungang/verify.html?studentID=${studentID}&source=qr`);
+document.getElementById("qrCode").src = `https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${qrData}`;
+
     });
 
     // 학생 정보 저장 함수

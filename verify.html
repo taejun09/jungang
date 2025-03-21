@@ -57,9 +57,10 @@
         async function verifyStudent() {
             const urlParams = new URLSearchParams(window.location.search);
             const studentID = urlParams.get("studentID");
+            const source = urlParams.get("source"); // QR 코드에서 source=qr 추가
     
-            // URL 직접 입력 또는 복사 방지
-            if (!document.referrer) {
+            // URL 직접 입력 방지 (단, QR 코드 접근은 허용)
+            if (!document.referrer && source !== "qr") {
                 document.body.innerHTML = "<h2 style='color: red;'>❌ 올바른 접근 경로가 아닙니다.</h2>";
                 return;
             }
@@ -97,5 +98,6 @@
     
         verifyStudent();
     </script>
+    
 </body>
 </html>
