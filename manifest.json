@@ -3,7 +3,7 @@
     "short_name": "중앙고",
     "start_url": "/jungang/index.html",
     "display": "standalone",
-    "scope": "https://taejun09.github.io/jungang/",
+    "scope": "/jungang/",
     "background_color": "#18181c",
     "theme_color": "#18181c",
     "icons": [
