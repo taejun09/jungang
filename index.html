@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
     <title>군산중앙고등학교 기숙사</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
@@ -60,8 +60,8 @@
 <script>
     (function() {
         try {
-        // 로그인 정보 가져오기 (localStorage 사용)
-        const loggedInUser = localStorage.getItem("loggedInUser");
+            // 로그인 정보 가져오기 (localStorage 사용 → 세션 유지)
+            let loggedInUser = sessionStorage.getItem("loggedInUser") || localStorage.getItem("loggedInUser");
 
             if (!loggedInUser) {
                 // 로그인 정보가 없으면 로그인 페이지로 이동
