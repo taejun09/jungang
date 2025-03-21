@@ -43,46 +43,46 @@
 
 <script>
     async function verifyDOB() {
-    const inputDOB = document.getElementById("dob").value.trim();
-    const inputName = document.getElementById("name").value.trim();
-
-    try {
-        const response = await fetch("https://script.googleusercontent.com/macros/echo?user_content_key=AehSKLglGrRAgk0WeMYmdIPAmpcWUWMuAOUwy3dszIm1qj_LUJWVOGtma7nSToxIb2WzNzSlUl_6ckqLxw98vz6POz0RHppVMUOW_HHnfxEGlUA8hl63dXe9dA8hLXVZODrOlQYpB58tZ4sTpPmvrJNSvTKS5Li381eZU-Ocga9Ip82eqYdxhfMczu9e38fNPnGz1KjRHOPN7xLBIx31LxtQy62Yz3rLD1x4bg67MSDG3zhxgBjBLMHrtfH2OCdtAaHRlxhmJd5m84XCMuv_PTLm4mzMj8_Tmg&lib=MIiTwKlDuBdmMmEehkb8j16Kr128tNxL1");
-        const validPasswords = await response.json();
-
-        const validData = validPasswords
-            .map(entry => {
-                const authCode = entry.authCode ? String(entry.authCode).trim() : null;
-                const userName = entry.userName ? String(entry.userName).trim() : null;
-                const studentID = entry.studentID ? String(entry.studentID).trim() : null; // 학번
-                const profileImage = entry.profileImage ? String(entry.profileImage).trim() : null; // 프로필 이미지
-
-                return authCode && userName ? { code: authCode, name: userName, id: studentID, image: profileImage } : null;
-            })
-            .filter(entry => entry !== null);
-
-        const matchedEntry = validData.find(entry => entry.code === inputDOB && entry.name === inputName);
-
-        if (matchedEntry) {
-            // ✅ localStorage에 로그인 정보 저장 (브라우저를 닫아도 유지됨)
-            localStorage.setItem("loggedInUser", matchedEntry.name);
-            localStorage.setItem("studentID", matchedEntry.id);
-            localStorage.setItem("profileImage", matchedEntry.image);
-
-            // ✅ sessionStorage에도 로그인 정보 저장 (새로고침 시에도 유지됨)
-            sessionStorage.setItem("loggedInUser", matchedEntry.name);
-            sessionStorage.setItem("studentID", matchedEntry.id);
-            sessionStorage.setItem("profileImage", matchedEntry.image);
-
-            window.location.href = "https://taejun09.github.io/jungang";
-        } else {
-            showCustomAlert("입력하신 인증코드나 이름이 틀린 것 같아요! <br> 다시 한 번 확인해 주세요.");
+        const inputDOB = document.getElementById("dob").value.trim();
+        const inputName = document.getElementById("name").value.trim();
+    
+        try {
+            const response = await fetch("https://script.googleusercontent.com/macros/echo?user_content_key=AehSKLglGrRAgk0WeMYmdIPAmpcWUWMuAOUwy3dszIm1qj_LUJWVOGtma7nSToxIb2WzNzSlUl_6ckqLxw98vz6POz0RHppVMUOW_HHnfxEGlUA8hl63dXe9dA8hLXVZODrOlQYpB58tZ4sTpPmvrJNSvTKS5Li381eZU-Ocga9Ip82eqYdxhfMczu9e38fNPnGz1KjRHOPN7xLBIx31LxtQy62Yz3rLD1x4bg67MSDG3zhxgBjBLMHrtfH2OCdtAaHRlxhmJd5m84XCMuv_PTLm4mzMj8_Tmg&lib=MIiTwKlDuBdmMmEehkb8j16Kr128tNxL1");
+            const validPasswords = await response.json();
+    
+            console.log("API 응답 데이터:", validPasswords); // 🛠 원본 데이터 확인
+    
+            const validData = validPasswords
+                .map(entry => {
+                    const authCode = entry.authCode ? String(entry.authCode).trim() : null;
+                    const userName = entry.userName ? String(entry.userName).trim() : null;
+                    const studentID = entry.studentID ? String(entry.studentID).trim() : null; // 학번
+                    const profileImage = entry.profileImage ? String(entry.profileImage).trim() : null; // 프로필 이미지
+    
+                    return authCode && userName ? { code: authCode, name: userName, id: studentID, image: profileImage } : null;
+                })
+                .filter(entry => entry !== null);
+    
+            console.log("가공된 데이터:", validData); // 🛠 가공된 데이터 확인
+    
+            const matchedEntry = validData.find(entry => entry.code === inputDOB && entry.name === inputName);
+    
+            if (matchedEntry) {
+                console.log("매칭된 사용자:", matchedEntry); // 🛠 매칭된 사용자 확인
+    
+                sessionStorage.setItem("loggedInUser", matchedEntry.name);
+                sessionStorage.setItem("studentID", matchedEntry.id);
+                sessionStorage.setItem("profileImage", matchedEntry.image);
+    
+                window.location.href = "https://taejun09.github.io/jungang";
+            } else {
+                showCustomAlert("입력하신 인증코드나 이름이 틀린 것 같아요! <br> 다시 한 번 확인해 주세요.");
+            }
+        } catch (error) {
+            console.error("인증서버 API 오류:", error);
+            showCustomAlert("서버 오류! 다시 시도해주세요.");
         }
-    } catch (error) {
-        console.error("인증서버 API 오류:", error);
-        showCustomAlert("서버 오류! 다시 시도해주세요.");
     }
-}
 
         
 
