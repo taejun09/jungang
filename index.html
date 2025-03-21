@@ -33,24 +33,7 @@
     </div>
 </div>
 <script>
-    (function() {
-        try {
-            // 로그인 정보 가져오기
-            const loggedInUser = sessionStorage.getItem("loggedInUser");
 
-            if (!loggedInUser) {
-                // 로그인 정보가 없으면 즉시 로그인 페이지로 이동
-                window.location.replace("http://127.0.0.1:5500/login/index.html");
-            } else {
-                // 로그인된 경우 페이지 표시
-                document.body.style.display = "block";
-                document.getElementById("welcomeUser").innerText = `${loggedInUser}님`;
-            }
-        } catch (error) {
-            console.error("로그인 확인 중 오류 발생:", error);
-            window.location.replace("http://127.0.0.1:5500/login/index.html");
-        }
-    })();
 </script>
 
 <script>
@@ -188,11 +171,12 @@
         const reportBtn = document.getElementById("report-btn");
         const reportPopupContent = document.getElementById("report-popup-content");
         const reportText = document.getElementById("report-text");
+        const reportRoom = document.getElementById("report-room");
         const submitReportBtn = document.getElementById("submit-report");
         const reportCategory = document.getElementById("report-category");
         const customAlert = document.getElementById("custom-alert");
         const customAlertMessage = document.getElementById("custom-alert-message");
-
+    
         function showAlert(message) {
             customAlertMessage.textContent = message;
             customAlert.classList.remove("hidden");
@@ -200,44 +184,57 @@
                 customAlert.classList.add("hidden");
             }, 3000);
         }
-
+    
         reportBtn.addEventListener("click", function (event) {
             event.preventDefault();
             reportPopup.classList.remove("hidden");
         });
-
+    
         closeReportPopupBtn.addEventListener("click", function () {
             reportPopup.classList.add("hidden");
         });
-
+    
         reportPopup.addEventListener("click", function (event) {
             if (!reportPopupContent.contains(event.target)) {
                 reportPopup.classList.add("hidden");
             }
         });
-
+    
+        // 카테고리 선택 시 호실 입력 보이기
         reportCategory.addEventListener("change", function () {
+            if (reportCategory.value) {
+                reportRoom.classList.remove("hidden");
+            } else {
+                reportRoom.classList.add("hidden");
+            }
+            
             if (reportCategory.value === "기타") {
                 reportText.classList.remove("hidden");
             } else {
                 reportText.classList.add("hidden");
             }
         });
-
+    
         submitReportBtn.addEventListener("click", async function () {
             const category = reportCategory.value;
+            const room = reportRoom.value.trim();
             const reportContent = reportText.value.trim();
-
+    
             if (!category) {
                 showAlert("카테고리를 선택해주세요.");
                 return;
             }
-
+    
+            if (!room) {
+                showAlert("호실을 입력해주세요.");
+                return;
+            }
+    
             if (category === "기타" && !reportContent) {
                 showAlert("고장 내용을 입력해주세요.");
                 return;
             }
-
+    
             const webhookUrl = "https://discord.com/api/webhooks/1350727157214871612/4cIG2DR-1MqC6hen4TjarIBSlaZ18OrelmBxQVK61hzGtiub-CBBkOcupK-7rjrG26pY";
             const payload = {
                 embeds: [{
@@ -245,31 +242,34 @@
                     color: 15158332,
                     fields: [
                         { name: "카테고리", value: category, inline: true },
+                        { name: "호실", value: room, inline: true },
                         { name: "내용", value: category === "기타" ? reportContent : "(내용 없음)", inline: false }
                     ],
                     timestamp: new Date().toISOString()
                 }]
             };
-
+    
             try {
                 await fetch(webhookUrl, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(payload)
                 });
-
+    
                 showAlert("신고가 접수되었습니다.");
                 reportPopup.classList.add("hidden");
                 reportCategory.value = "";
+                reportRoom.value = "";
                 reportText.value = "";
                 reportText.classList.add("hidden");
+                reportRoom.classList.add("hidden");
             } catch (error) {
                 console.error("전송 오류:", error);
                 showAlert("전송 과정에서 문제가 발생했어요.");
             }
         });
     });
-</script>
+    </script>
 
 <script>
     document.getElementById('closePopup').addEventListener('click', function() {
@@ -337,7 +337,7 @@ document.addEventListener("DOMContentLoaded", function () {
         } else if (rawType.includes("외박")) {
             requestType = "외박";
         } else if (rawType.includes("조기")) {
-            requestType = "조기";
+            requestType = "조기퇴소";
         } else {
             requestType = "출입 신청";
         }
@@ -468,27 +468,50 @@ document.addEventListener("DOMContentLoaded", function () {
     </div>
 </div>
 
-<!-- 모바일 학생증 -->
-<div class="bg-[#18181c] p-4 rounded-lg mb-4">
-    <h2 class="text-lg font-semibold mb-3 flex items-center text-[#D9D9D9]">
-        <i class="fas fa-id-card mr-2"></i> 모바일 학생증
-    </h2>
-    
-    <!-- 학생증 카드 (앞면/뒷면) -->
-    <div class="relative w-80 h-48 perspective-1000 mx-auto" onclick="flipCard()">
-        <div id="studentCard" class="w-full h-full transition-transform duration-500 ease-in-out transform-style-preserve-3d">
-            
+<style>
+    /* 전체 화면 모드 */
+    #fullscreen-card {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: #18181c;
+        z-index: 9999;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+    }
+
+    #fullscreen-card img {
+        width: 320px;
+        height: auto;
+    }
+
+    #close-fullscreen {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        color: white;
+        font-size: 24px;
+        cursor: pointer;
+    }
+</style>
+
+<!-- 가로 모드 전체 화면 -->
+<div id="fullscreen-card">
+    <span id="close-fullscreen">&times;</span>
+    <div class="relative w-[320px] h-[192px] perspective-1000" onclick="flipCard()">
+        <div id="fullscreen-studentCard" class="w-full h-full transition-transform duration-500 ease-in-out transform-style-preserve-3d">
             <!-- 앞면 -->
             <div class="absolute w-full h-full bg-[#1e1e22] rounded-xl shadow-lg flex items-center px-5 py-3 backface-hidden border border-[#33323A]">
-                <img id="schoolLogo" src="https://taejun09.github.io/jungang/assets/image/jungang-main_logo.png" 
+                <img id="fs-schoolLogo" src="https://taejun09.github.io/jungang/assets/image/jungang-main_logo.png" 
                      alt="학교 로고" class="w-14 h-14 rounded-full border-2 border-[#33323A] shadow-md">
                 <div class="ml-4 text-left text-[#D9D9D9]">
-                    <p id="studentName" class="text-lg font-semibold">이름</p>
-                    <p id="studentID" class="text-sm text-[#A0A0A0]">학번: </p>
+                    <p id="fs-studentName" class="text-lg font-semibold">이름</p>
+                    <p id="fs-studentID" class="text-sm text-[#A0A0A0]">학번: </p>
                     <p class="text-xs mt-1 text-[#7C7C7C]">중앙고등학교</p>
                 </div>
                 <div class="ml-auto">
-                    <img id="studentPhoto" src="https://randomuser.me/api/portraits/men/75.jpg" 
+                    <img id="fs-studentPhoto" src="https://ifh.cc/g/7qFrDt.png" 
                          alt="학생 사진" class="w-16 h-16 rounded-lg border-2 border-[#33323A] shadow-md">
                 </div>
             </div>
@@ -496,9 +519,9 @@ document.addEventListener("DOMContentLoaded", function () {
             <!-- 뒷면 -->
             <div class="absolute w-full h-full bg-[#1e1e22] rounded-xl shadow-lg flex flex-col items-center justify-center rotate-y-180 backface-hidden border border-[#33323A]">
                 <p class="text-[#D9D9D9] text-sm font-semibold">발급 기관: 중앙고등학교</p>
-                <p class="text-[#A0A0A0] text-xs">유효기간: 2025년 2월 28일</p>
+                <p class="text-[#A0A0A0] text-xs">유효기간: 2025년 12월 31일</p>
                 <div class="bg-[#18181c] p-2 rounded-lg mt-3 border border-[#33323A]">
-                    <img id="qrCode" src="" alt="QR 코드" class="w-20 h-20">
+                    <img id="fs-qrCode" src="" alt="QR 코드" class="w-20 h-20">
                 </div>
                 <p class="text-[#7C7C7C] text-xs mt-2">이 학생증은 본인 확인용입니다.</p>
             </div>
@@ -511,23 +534,61 @@ document.addEventListener("DOMContentLoaded", function () {
     function flipCard() {
         flipped = !flipped;
         document.getElementById("studentCard").style.transform = flipped ? "rotateY(180deg)" : "rotateY(0deg)";
+        document.getElementById("fullscreen-studentCard").style.transform = flipped ? "rotateY(180deg)" : "rotateY(0deg)";
     }
 
     // 학생 정보 불러오기 및 반영
     document.addEventListener("DOMContentLoaded", function () {
-    const name = sessionStorage.getItem("loggedInUser") || "이름 없음";
-    const studentID = sessionStorage.getItem("studentID") || "000000";
-    const profileImage = sessionStorage.getItem("profileImage") || "https://randomuser.me/api/portraits/men/75.jpg";
+        const name = sessionStorage.getItem("loggedInUser") || "홍길동";
+        const studentID = sessionStorage.getItem("studentID") || "2025";
+        const profileImage = sessionStorage.getItem("profileImage") || "https://ifh.cc/g/7qFrDt.png";
 
-    document.getElementById("studentName").innerText = name;
-    document.getElementById("studentID").innerText = `학번: ${studentID}`;
-    document.getElementById("studentPhoto").src = profileImage;
+        document.getElementById("studentName").innerText = name;
+        document.getElementById("studentID").innerText = `학번: ${studentID}`;
+        document.getElementById("studentPhoto").src = profileImage;
 
-    // QR 코드 생성 (스캔 시 인증 페이지로 이동)
-    const qrData = encodeURIComponent(`https://taejun09.github.io/jungang/verify.html?studentID=${studentID}`);
-    document.getElementById("qrCode").src = `https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${qrData}`;
-});
+        document.getElementById("fs-studentName").innerText = name;
+        document.getElementById("fs-studentID").innerText = `학번: ${studentID}`;
+        document.getElementById("fs-studentPhoto").src = profileImage;
 
+        // QR 코드 생성 (스캔 시 인증 페이지로 이동)
+        const qrData = encodeURIComponent(`https://taejun09.github.io/jungang/verify.html?studentID=${studentID}`);
+        document.getElementById("qrCode").src = `https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${qrData}`;
+        document.getElementById("fs-qrCode").src = `https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${qrData}`;
+    });
+
+    // 2번 흔들었을 때 가로 모드 전환
+    let lastShakeTime = 0;
+    let shakeCount = 0;
+    window.addEventListener("devicemotion", function (event) {
+        const acceleration = event.accelerationIncludingGravity;
+        const threshold = 15; // 흔들기 감도 (값이 클수록 강한 흔들기 필요)
+        
+        if (acceleration.x > threshold || acceleration.y > threshold || acceleration.z > threshold) {
+            const now = Date.now();
+            if (now - lastShakeTime < 800) {
+                shakeCount++;
+            } else {
+                shakeCount = 1;
+            }
+            lastShakeTime = now;
+
+            if (shakeCount >= 2) {
+                shakeCount = 0;
+                enterFullscreenMode();
+            }
+        }
+    });
+
+    // 전체 화면 진입
+    function enterFullscreenMode() {
+        document.getElementById("fullscreen-card").style.display = "flex";
+    }
+
+    // 전체 화면 닫기
+    document.getElementById("close-fullscreen").addEventListener("click", function () {
+        document.getElementById("fullscreen-card").style.display = "none";
+    });
 </script>
 
 
@@ -580,12 +641,14 @@ document.addEventListener("DOMContentLoaded", function () {
 <div id="report-popup" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center hidden">
     <div class="bg-[#1e1e22] p-5 rounded-2xl w-[340px] shadow-lg relative" id="report-popup-content">
         <button id="close-report-popup" class="absolute top-5 right-6 text-[#bfbfbf] hover:text-white transition">
-           <i class="fa-solid fa-xmark"></i>
+            <i class="fa-solid fa-xmark"></i>
         </button>
 
         <h2 class="text-xl font-bold mb-4 text-[#D9D9D9] flex items-center">
             <i class="fas fa-exclamation-triangle mr-2"></i> 고장 신고
         </h2>
+        
+        <!-- 카테고리 선택 -->
         <select id="report-category" class="w-full p-2 bg-[#29292e] text-[#D9D9D9] rounded-md mb-3">
             <option value="">카테고리를 선택하세요</option>
             <option value="화장실">화장실</option>
@@ -593,7 +656,13 @@ document.addEventListener("DOMContentLoaded", function () {
             <option value="에어컨/난방">에어컨/난방</option>
             <option value="기타">기타</option>
         </select>
+
+        <!-- 호실 입력 -->
+        <input id="report-room" type="text" class="w-full p-2 bg-[#29292e] text-[#D9D9D9] rounded-md mb-3 hidden" placeholder="호실을 입력하세요 (예: 212호)">
+
+        <!-- 기타 선택 시 내용 입력 -->
         <textarea id="report-text" class="w-full p-2 bg-[#29292e] text-[#D9D9D9] rounded-md hidden" rows="4" placeholder="고장 내용을 입력하세요"></textarea>
+
         <button id="submit-report" class="mt-3 bg-[#363740] text-white px-4 py-2 rounded-lg w-full hover:bg-[#2f3033] transition">신고하기</button>
     </div>
 </div>
