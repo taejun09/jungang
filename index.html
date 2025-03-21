@@ -15,7 +15,18 @@
 <link rel="manifest" href="https://taejun09.github.io/jungang/site.webmanifest" />
 <link href="jungang-main.css" rel="stylesheet" type="text/css"/>
 </head>
-
+<head>
+    <!-- PWA 설정 -->
+    <link rel="manifest" href="/manifest.json">
+    
+    <!-- iOS에서 전체 화면 표시 -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="중앙고 모바일">
+    
+    <!-- iOS 홈 화면 아이콘 -->
+    <link rel="apple-touch-icon" href="/assets/image/apple-touch-icon.png">
+</head>
 
 <body class="!bg-[#101012] text-white">
     <div class="max-w-sm mx-auto bg-gray-900 min-h-screen p-4">
@@ -35,22 +46,20 @@
 <script>
     (function() {
         try {
-            // localStorage에서 로그인 정보 가져오기
-            const loggedInUser = localStorage.getItem("loggedInUser");
+            // 로그인 정보 가져오기
+            const loggedInUser = sessionStorage.getItem("loggedInUser");
 
             if (!loggedInUser) {
-                // 로그인 정보가 없으면 로그인 페이지로 이동
-                window.location.href = "https://taejun09.github.io/jungang/login/";
+                // 로그인 정보가 없으면 즉시 로그인 페이지로 이동
+                window.location.replace("https://taejun09.github.io/jungang/login");
             } else {
-                // 로그인된 경우 사용자 정보 표시
-                const welcomeElement = document.getElementById("welcomeUser");
-                if (welcomeElement) {
-                    welcomeElement.innerText = `${loggedInUser}님`;
-                }
+                // 로그인된 경우 페이지 표시
+                document.body.style.display = "block";
+                document.getElementById("welcomeUser").innerText = `${loggedInUser}님`;
             }
         } catch (error) {
             console.error("로그인 확인 중 오류 발생:", error);
-            window.location.href = "https://taejun09.github.io/jungang/login/";
+            window.location.replace("https://taejun09.github.io/jungang/login");
         }
     })();
 </script>
