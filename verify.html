@@ -19,14 +19,22 @@
 async function verifyStudent() {
     const params = new URLSearchParams(window.location.search);
     const studentID = params.get("studentID");
+    const token = params.get("token");  // QR 코드의 토큰 가져오기
 
-    if (!studentID) {
+    if (!studentID || !token) {
         document.getElementById("result").innerText = "🚫 유효하지 않은 QR 코드입니다.";
         return;
     }
 
+    // 이미 사용된 QR 코드인지 확인
+    const storedToken = sessionStorage.getItem(`qr_${studentID}`);
+    if (!storedToken || storedToken !== token) {
+        document.getElementById("result").innerText = "🚫 만료되었거나 올바르지 않은 접근입니다!";
+        return;
+    }
+
     try {
-        const response = await fetch("https://script.googleusercontent.com/macros/echo?user_content_key=AehSKLglGrRAgk0WeMYmdIPAmpcWUWMuAOUwy3dszIm1qj_LUJWVOGtma7nSToxIb2WzNzSlUl_6ckqLxw98vz6POz0RHppVMUOW_HHnfxEGlUA8hl63dXe9dA8hLXVZODrOlQYpB58tZ4sTpPmvrJNSvTKS5Li381eZU-Ocga9Ip82eqYdxhfMczu9e38fNPnGz1KjRHOPN7xLBIx31LxtQy62Yz3rLD1x4bg67MSDG3zhxgBjBLMHrtfH2OCdtAaHRlxhmJd5m84XCMuv_PTLm4mzMj8_Tmg&lib=MIiTwKlDuBdmMmEehkb8j16Kr128tNxL1");
+        const response = await fetch("https://script.googleusercontent.com/macros/echo?user_content_key=...");
         const validStudents = await response.json();
 
         const matchedEntry = validStudents.find(entry => entry.studentID && String(entry.studentID).trim() === studentID);
@@ -37,7 +45,11 @@ async function verifyStudent() {
                 <p>학번: ${matchedEntry.studentID}</p>
                 <p style="color: lime;">✅ 학생증 인증 완료</p>
             `;
+
             sendDiscordLog(matchedEntry.userName, matchedEntry.studentID);
+
+            // ✅ QR 코드 사용 후 즉시 만료
+            sessionStorage.removeItem(`qr_${studentID}`);
         } else {
             document.getElementById("result").innerHTML = `<p style="color: red;">❌ 유효하지 않은 학생증입니다.</p>`;
         }
@@ -45,6 +57,7 @@ async function verifyStudent() {
         document.getElementById("result").innerText = "서버 오류 발생";
     }
 }
+
 
 function sendDiscordLog(name, studentID) {
     const webhookURL = "https://discord.com/api/webhooks/1352639043908665384/Y0dX7q6Gv3PxYOdAo_ZwWYMoxdRBZcxRlYiIJVqM9WoVtEVuOk708SIdii4vy_qENjZi";

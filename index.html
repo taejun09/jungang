@@ -678,20 +678,24 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     document.addEventListener("DOMContentLoaded", async function () {
-        const name = sessionStorage.getItem("loggedInUser");
-        const studentID = sessionStorage.getItem("studentID");
-        const profileImage = sessionStorage.getItem("profileImage");
+    const name = sessionStorage.getItem("loggedInUser");
+    const studentID = sessionStorage.getItem("studentID");
+    const profileImage = sessionStorage.getItem("profileImage");
 
-        if (name && studentID && profileImage) {
-            document.getElementById("studentName").innerText = name;
-            document.getElementById("studentID").innerText = `학번: ${studentID}`;
-            document.getElementById("studentPhoto").src = profileImage;
+    if (name && studentID && profileImage) {
+        document.getElementById("studentName").innerText = name;
+        document.getElementById("studentID").innerText = `학번: ${studentID}`;
+        document.getElementById("studentPhoto").src = profileImage;
 
-            // QR 코드 생성 (서버에서 처리)
-            const qrURL = `https://taejun09.github.io/jungang/verify.html?studentID=${studentID}`;
-            document.getElementById("qrCode").src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${qrURL}`;
-        }
-    });
+        // QR 코드에 유효성 토큰 추가
+        const qrToken = Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
+        sessionStorage.setItem(`qr_${studentID}`, qrToken);  // QR 코드의 토큰 저장
+
+        const qrURL = `https://taejun09.github.io/jungang/verify.html?studentID=${studentID}&token=${qrToken}`;
+        document.getElementById("qrCode").src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(qrURL)}`;
+    }
+});
+
 </script>
 
 
