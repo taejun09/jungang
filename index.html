@@ -60,53 +60,22 @@
 <script>
     (function() {
         try {
-            // localStorage에서 로그인 정보 가져오기
             let loggedInUser = localStorage.getItem("loggedInUser");
 
             if (!loggedInUser) {
-                // 로그인 정보가 없으면 강제 로그인 유지
-                localStorage.setItem("loggedInUser", "유저이름"); // 기본값 설정
-                loggedInUser = "유저이름";
-            }
-
-            // 사용자 정보 표시
-            document.addEventListener("DOMContentLoaded", function () {
+                window.location.replace("https://taejun09.github.io/jungang/login");
+            } else {
+                // sessionStorage에 로그인 정보 복구 (새로고침 및 브라우저 재시작 후에도 유지됨)
+                sessionStorage.setItem("loggedInUser", loggedInUser);
                 document.getElementById("welcomeUser").innerText = `${loggedInUser}님`;
-            });
-
-            // 개발자 도구에서 삭제해도 복구 (5초마다 체크)
-            setInterval(() => {
-                if (!localStorage.getItem("loggedInUser")) {
-                    localStorage.setItem("loggedInUser", loggedInUser);
-                }
-            }, 5000);
+            }
         } catch (error) {
             console.error("로그인 확인 중 오류 발생:", error);
             window.location.replace("https://taejun09.github.io/jungang/login");
         }
     })();
 
-    // 로그아웃 버튼 완전 비활성화
-    document.addEventListener("DOMContentLoaded", function () {
-        const logoutButton = document.getElementById("logoutButton");
-        if (logoutButton) {
-            logoutButton.remove(); // 버튼 삭제
-        }
-    });
-
-    // 개발자 도구 방지 (F12, 우클릭)
-    document.addEventListener("keydown", function (event) {
-        if (event.key === "F12" || (event.ctrlKey && event.shiftKey && event.key === "I")) {
-            event.preventDefault();
-            alert("개발자 도구 사용이 제한되었습니다.");
-        }
-    });
-
-    document.addEventListener("contextmenu", function (event) {
-        event.preventDefault();
-    });
 </script>
-
 
 
 <script>
