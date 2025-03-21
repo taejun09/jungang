@@ -40,7 +40,7 @@
 
             if (!loggedInUser) {
                 // 로그인 정보가 없으면 즉시 로그인 페이지로 이동
-                window.location.replace("https://taejun09.github.io/jungang/login/");
+                window.location.replace("http://127.0.0.1:5500/login/index.html");
             } else {
                 // 로그인된 경우 페이지 표시
                 document.body.style.display = "block";
@@ -48,7 +48,7 @@
             }
         } catch (error) {
             console.error("로그인 확인 중 오류 발생:", error);
-            window.location.replace("https://taejun09.github.io/jungang/login/");
+            window.location.replace("http://127.0.0.1:5500/login/index.html");
         }
     })();
 </script>
@@ -468,6 +468,84 @@ document.addEventListener("DOMContentLoaded", function () {
     </div>
 </div>
 
+<!-- 모바일 학생증 -->
+<div class="bg-[#18181c] p-4 rounded-lg mb-4">
+    <h2 class="text-lg font-semibold mb-3 flex items-center text-[#D9D9D9]">
+        <i class="fas fa-id-card mr-2"></i> 모바일 학생증
+    </h2>
+    
+    <!-- 학생증 카드 (앞면/뒷면) -->
+    <div class="relative w-80 h-48 perspective-1000 mx-auto" onclick="flipCard()">
+        <div id="studentCard" class="w-full h-full transition-transform duration-500 ease-in-out transform-style-preserve-3d">
+            
+            <!-- 앞면 -->
+            <div class="absolute w-full h-full bg-[#1e1e22] rounded-xl shadow-lg flex items-center px-5 py-3 backface-hidden border border-[#33323A]">
+                <img id="schoolLogo" src="https://taejun09.github.io/jungang/assets/image/jungang-main_logo.png" 
+                     alt="학교 로고" class="w-14 h-14 rounded-full border-2 border-[#33323A] shadow-md">
+                <div class="ml-4 text-left text-[#D9D9D9]">
+                    <p id="studentName" class="text-lg font-semibold">이름</p>
+                    <p id="studentID" class="text-sm text-[#A0A0A0]">학번: </p>
+                    <p class="text-xs mt-1 text-[#7C7C7C]">중앙고등학교</p>
+                </div>
+                <div class="ml-auto">
+                    <img id="studentPhoto" src="https://randomuser.me/api/portraits/men/75.jpg" 
+                         alt="학생 사진" class="w-16 h-16 rounded-lg border-2 border-[#33323A] shadow-md">
+                </div>
+            </div>
+
+            <!-- 뒷면 -->
+            <div class="absolute w-full h-full bg-[#1e1e22] rounded-xl shadow-lg flex flex-col items-center justify-center rotate-y-180 backface-hidden border border-[#33323A]">
+                <p class="text-[#D9D9D9] text-sm font-semibold">발급 기관: 중앙고등학교</p>
+                <p class="text-[#A0A0A0] text-xs">유효기간: 2025년 2월 28일</p>
+                <div class="bg-[#18181c] p-2 rounded-lg mt-3 border border-[#33323A]">
+                    <img id="qrCode" src="" alt="QR 코드" class="w-20 h-20">
+                </div>
+                <p class="text-[#7C7C7C] text-xs mt-2">이 학생증은 본인 확인용입니다.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let flipped = false;
+    function flipCard() {
+        flipped = !flipped;
+        document.getElementById("studentCard").style.transform = flipped ? "rotateY(180deg)" : "rotateY(0deg)";
+    }
+
+    // 학생 정보 불러오기 및 반영
+    document.addEventListener("DOMContentLoaded", function () {
+    const name = sessionStorage.getItem("loggedInUser") || "이름 없음";
+    const studentID = sessionStorage.getItem("studentID") || "000000";
+    const profileImage = sessionStorage.getItem("profileImage") || "https://randomuser.me/api/portraits/men/75.jpg";
+
+    document.getElementById("studentName").innerText = name;
+    document.getElementById("studentID").innerText = `학번: ${studentID}`;
+    document.getElementById("studentPhoto").src = profileImage;
+
+    // QR 코드 생성 (스캔 시 인증 페이지로 이동)
+    const qrData = encodeURIComponent(`https://taejun09.github.io/jungang/verify.html?studentID=${studentID}`);
+    document.getElementById("qrCode").src = `https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${qrData}`;
+});
+
+</script>
+
+
+<style>
+    .perspective-1000 {
+        perspective: 1000px;
+    }
+    .transform-style-preserve-3d {
+        transform-style: preserve-3d;
+    }
+    .backface-hidden {
+        backface-visibility: hidden;
+    }
+    .rotate-y-180 {
+        transform: rotateY(180deg);
+    }
+</style>
+
 <!-- 식단 팝업 -->
 <div id="meal-popup" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center hidden">
     <div class="bg-[#1e1e22] p-5 rounded-2xl w-[340px] shadow-lg relative" id="meal-popup-content">
@@ -632,92 +710,7 @@ document.addEventListener("DOMContentLoaded", function () {
     </div>
 </div>
  
-<!-- 모바일 학생증 -->
-<div class="bg-[#18181c] p-4 rounded-lg mb-4">
-    <h2 class="text-lg font-semibold mb-3 flex items-center text-[#D9D9D9]">
-        <i class="fas fa-id-card mr-2"></i> 모바일 학생증
-    </h2>
-    
-    <!-- 학생증 카드 (앞면/뒷면) -->
-    <div class="relative w-80 h-48 perspective-1000 mx-auto" onclick="flipCard()">
-        <div id="studentCard" class="w-full h-full transition-transform duration-500 ease-in-out transform-style-preserve-3d">
-            
-            <!-- 앞면 -->
-            <div class="absolute w-full h-full bg-[#1e1e22] rounded-xl shadow-lg flex items-center px-5 py-3 backface-hidden border border-[#33323A]">
-                <img id="schoolLogo" src="https://taejun09.github.io/jungang/assets/image/jungang-main_logo.png" 
-                     alt="학교 로고" class="w-14 h-14 rounded-full border-2 border-[#33323A] shadow-md">
-                <div class="ml-4 text-left text-[#D9D9D9]">
-                    <p id="studentName" class="text-lg font-semibold">이름</p>
-                    <p id="studentID" class="text-sm text-[#A0A0A0]">학번: </p>
-                    <p class="text-xs mt-1 text-[#7C7C7C]">중앙중학교</p>
-                </div>
-                <div class="ml-auto">
-                    <img id="studentPhoto" src="https://randomuser.me/api/portraits/men/75.jpg" 
-                         alt="학생 사진" class="w-16 h-16 rounded-lg border-2 border-[#33323A] shadow-md">
-                </div>
-            </div>
 
-            <!-- 뒷면 -->
-            <div class="absolute w-full h-full bg-[#1e1e22] rounded-xl shadow-lg flex flex-col items-center justify-center rotate-y-180 backface-hidden border border-[#33323A]">
-                <p class="text-[#D9D9D9] text-sm font-semibold">발급 기관: 중앙중학교</p>
-                <p class="text-[#A0A0A0] text-xs">유효기간: 2025년 2월 28일</p>
-                <div class="bg-[#18181c] p-2 rounded-lg mt-3 border border-[#33323A]">
-                    <img id="qrCode" src="" alt="QR 코드" class="w-20 h-20">
-                </div>
-                <p class="text-[#7C7C7C] text-xs mt-2">이 학생증은 본인 확인용입니다.</p>
-            </div>
-        </div>
-    </div>
-</div>
-
-<script>
-    let flipped = false;
-    function flipCard() {
-        flipped = !flipped;
-        document.getElementById("studentCard").style.transform = flipped ? "rotateY(180deg)" : "rotateY(0deg)";
-    }
-
-    document.addEventListener("DOMContentLoaded", function () {
-    const name = sessionStorage.getItem("loggedInUser");
-    const studentID = sessionStorage.getItem("studentID");
-    const profileImage = sessionStorage.getItem("profileImage");
-
-    if (name && studentID && profileImage) {
-        document.getElementById("studentName").innerText = name;
-        document.getElementById("studentID").innerText = `학번: ${studentID}`;
-        document.getElementById("studentPhoto").src = profileImage;
-
-        // ✅ QR 생성 시 랜덤 토큰 추가
-        const token = Math.random().toString(36).substr(2, 9);
-        
-        // ✅ 생성한 토큰을 sessionStorage에 저장 (scannedTokens에 추가)
-        let scannedTokens = JSON.parse(sessionStorage.getItem("scannedTokens")) || [];
-        scannedTokens.push(token);
-        sessionStorage.setItem("scannedTokens", JSON.stringify(scannedTokens));
-
-        const qrURL = `https://taejun09.github.io/jungang/verify.html?studentID=${studentID}&token=${token}`;
-        document.getElementById("qrCode").src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${qrURL}`;
-    }
-});
-
-
-</script>
-
-
-<style>
-    .perspective-1000 {
-        perspective: 1000px;
-    }
-    .transform-style-preserve-3d {
-        transform-style: preserve-3d;
-    }
-    .backface-hidden {
-        backface-visibility: hidden;
-    }
-    .rotate-y-180 {
-        transform: rotateY(180deg);
-    }
-</style>
        <!-- 푸터 -->
 <footer class="bg-[#18181c] p-4 rounded-lg">
     <div class="text-center text-gray-400 text-sm py-6">
