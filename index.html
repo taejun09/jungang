@@ -58,23 +58,23 @@
     </div>
 </div>
 <script>
-    (function() {
-        try {
-            let loggedInUser = localStorage.getItem("loggedInUser");
+(function() {
+    try {
+        let loggedInUser = localStorage.getItem("loggedInUser");
 
-            if (!loggedInUser) {
-                window.location.replace("https://taejun09.github.io/jungang/login");
-            } else {
-                // sessionStorage에 로그인 정보 복구 (새로고침 및 브라우저 재시작 후에도 유지됨)
-                sessionStorage.setItem("loggedInUser", loggedInUser);
-                document.getElementById("welcomeUser").innerText = `${loggedInUser}님`;
-            }
-        } catch (error) {
-            console.error("로그인 확인 중 오류 발생:", error);
+        if (!loggedInUser) {
             window.location.replace("https://taejun09.github.io/jungang/login");
-        }
-    })();
+        } else {
+            // ✅ sessionStorage에도 로그인 정보 복구 (새로고침해도 유지)
+            sessionStorage.setItem("loggedInUser", loggedInUser);
 
+            document.getElementById("welcomeUser").innerText = `${loggedInUser}님`;
+        }
+    } catch (error) {
+        console.error("로그인 확인 중 오류 발생:", error);
+        window.location.replace("https://taejun09.github.io/jungang/login");
+    }
+})();
 </script>
 
 
