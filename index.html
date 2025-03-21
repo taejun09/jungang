@@ -35,23 +35,26 @@
 <script>
     (function() {
         try {
-            // 로그인 정보 가져오기 (localStorage 사용)
+            // localStorage에서 로그인 정보 가져오기
             const loggedInUser = localStorage.getItem("loggedInUser");
 
             if (!loggedInUser) {
                 // 로그인 정보가 없으면 로그인 페이지로 이동
-                window.location.replace("https://taejun09.github.io/jungang/login/");
+                window.location.href = "https://taejun09.github.io/jungang/login/";
             } else {
-                // 로그인된 경우 페이지 표시
-                document.body.style.display = "block";
-                document.getElementById("welcomeUser").innerText = `${loggedInUser}님`;
+                // 로그인된 경우 사용자 정보 표시
+                const welcomeElement = document.getElementById("welcomeUser");
+                if (welcomeElement) {
+                    welcomeElement.innerText = `${loggedInUser}님`;
+                }
             }
         } catch (error) {
             console.error("로그인 확인 중 오류 발생:", error);
-            window.location.replace("https://taejun09.github.io/jungang/login/");
+            window.location.href = "https://taejun09.github.io/jungang/login/";
         }
     })();
 </script>
+
 
 <script>
     // 노트북(1024px) 이상에서만 팝업 표시 및 블러 처리
