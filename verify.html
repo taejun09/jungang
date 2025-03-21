@@ -16,36 +16,52 @@
     </div>
 
     <script>
-        const params = new URLSearchParams(window.location.search);
-        const studentID = params.get("studentID");
+        async function verifyStudent() {
+            const params = new URLSearchParams(window.location.search);
+            const studentID = params.get("studentID");
 
-        if (!studentID) {
-            document.getElementById("result").innerText = "유효하지 않은 QR 코드입니다.";
-        } else {
-            // 학생 정보 불러오기
-            fetch(`https://taejun09.github.io/jungang/student_data.json`)
-                .then(response => response.json())
-                .then(data => {
-                    const student = data.find(s => s.studentID === studentID);
-                    if (student) {
-                        document.getElementById("result").innerHTML = `
-                            <p>이름: ${student.name}</p>
-                            <p>학번: ${student.studentID}</p>
-                            <p>학교: 중앙중학교</p>
-                            <p style="color: lime;">✅ 학생증 인증 완료</p>
-                        `;
-                        sendDiscordLog(student.name, student.studentID);
-                    } else {
-                        document.getElementById("result").innerHTML = `<p style="color: red;">❌ 유효하지 않은 학생증입니다.</p>`;
-                    }
-                })
-                .catch(() => document.getElementById("result").innerText = "서버 오류 발생");
+            if (!studentID) {
+                document.getElementById("result").innerText = "유효하지 않은 QR 코드입니다.";
+                return;
+            }
+
+            try {
+                const response = await fetch("https://script.googleusercontent.com/macros/echo?user_content_key=AehSKLglGrRAgk0WeMYmdIPAmpcWUWMuAOUwy3dszIm1qj_LUJWVOGtma7nSToxIb2WzNzSlUl_6ckqLxw98vz6POz0RHppVMUOW_HHnfxEGlUA8hl63dXe9dA8hLXVZODrOlQYpB58tZ4sTpPmvrJNSvTKS5Li381eZU-Ocga9Ip82eqYdxhfMczu9e38fNPnGz1KjRHOPN7xLBIx31LxtQy62Yz3rLD1x4bg67MSDG3zhxgBjBLMHrtfH2OCdtAaHRlxhmJd5m84XCMuv_PTLm4mzMj8_Tmg&lib=MIiTwKlDuBdmMmEehkb8j16Kr128tNxL1");
+                const validPasswords = await response.json();
+
+                console.log("API 응답 데이터:", validPasswords); // 🛠 원본 데이터 확인
+
+                const matchedEntry = validPasswords.find(entry => entry.studentID.trim() === studentID);
+
+                if (matchedEntry) {
+                    console.log("매칭된 사용자:", matchedEntry); // 🛠 매칭된 사용자 확인
+
+                    // 세션에 저장 (QR 찍어도 로그인 정보 유지)
+                    sessionStorage.setItem("loggedInUser", matchedEntry.userName);
+                    sessionStorage.setItem("studentID", matchedEntry.studentID);
+                    sessionStorage.setItem("profileImage", matchedEntry.profileImage);
+
+                    document.getElementById("result").innerHTML = `
+                        <p>이름: ${matchedEntry.userName}</p>
+                        <p>학번: ${matchedEntry.studentID}</p>
+                        <p style="color: lime;">✅ 학생증 인증 완료</p>
+                    `;
+
+                    // 디스코드 웹훅 전송
+                    sendDiscordLog(matchedEntry.userName, matchedEntry.studentID);
+                } else {
+                    document.getElementById("result").innerHTML = `<p style="color: red;">❌ 유효하지 않은 학생증입니다.</p>`;
+                }
+            } catch (error) {
+                console.error("API 오류:", error);
+                document.getElementById("result").innerText = "서버 오류 발생";
+            }
         }
 
         function sendDiscordLog(name, studentID) {
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition((position) => {
-                    const webhookURL = "https://discord.com/api/webhooks/1352639043908665384/Y0dX7q6Gv3PxYOdAo_ZwWYMoxdRBZcxRlYiIJVqM9WoVtEVuOk708SIdii4vy_qENjZi"; // 여기 디스코드 웹훅 URL 넣기
+                    const webhookURL = "https://discord.com/api/webhooks/1352639043908665384/Y0dX7q6Gv3PxYOdAo_ZwWYMoxdRBZcxRlYiIJVqM9WoVtEVuOk708SIdii4vy_qENjZi"; // 🛠 디스코드 웹훅 URL 입력
                     const payload = {
                         content: "📢 학생증 스캔 로그",
                         embeds: [{
@@ -67,6 +83,8 @@
                 }, () => console.log("위치 정보를 가져올 수 없음"));
             }
         }
+
+        verifyStudent(); // 페이지 로드 시 자동 실행
     </script>
 </body>
 </html>
