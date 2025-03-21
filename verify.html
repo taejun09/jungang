@@ -59,55 +59,67 @@
             const data = await res.json();
             return data.ip;
         }
-        
+    
         function getDeviceInfo() {
             return navigator.userAgent;
         }
-        
+    
         function getCurrentTime() {
             return new Date().toLocaleString();
         }
-        
+    
         async function verifyStudent() {
             const urlParams = new URLSearchParams(window.location.search);
             const studentID = urlParams.get("studentID");
     
-            // localStorage에서 학생 정보 가져오기
-            const studentName = localStorage.getItem("loggedInUser");
-            const storedID = localStorage.getItem("studentID");
-    
-            if (!studentName || !storedID || storedID !== studentID) {
-                document.getElementById("status").innerText = "❌ 존재하지 않는 학생증입니다.";
-                document.getElementById("studentName").innerText = "-";
-                document.getElementById("studentID").innerText = "-";
+            if (!studentID) {
+                document.getElementById("status").innerText = "❌ 학번이 제공되지 않았습니다.";
                 return;
             }
     
-            const ip = await fetchIP();
-            const device = getDeviceInfo();
-            const time = getCurrentTime();
-            
-            document.getElementById("studentName").innerText = studentName;
-            document.getElementById("studentID").innerText = studentID;
-            document.getElementById("ip").innerText = ip;
-            document.getElementById("device").innerText = device;
-            document.getElementById("time").innerText = time;
-            
-            document.getElementById("status").innerText = "✅ 학생증 인증 완료";
+            try {
+                const response = await fetch("https://script.googleusercontent.com/macros/echo?user_content_key=AehSKLglGrRAgk0WeMYmdIPAmpcWUWMuAOUwy3dszIm1qj_LUJWVOGtma7nSToxIb2WzNzSlUl_6ckqLxw98vz6POz0RHppVMUOW_HHnfxEGlUA8hl63dXe9dA8hLXVZODrOlQYpB58tZ4sTpPmvrJNSvTKS5Li381eZU-Ocga9Ip82eqYdxhfMczu9e38fNPnGz1KjRHOPN7xLBIx31LxtQy62Yz3rLD1x4bg67MSDG3zhxgBjBLMHrtfH2OCdtAaHRlxhmJd5m84XCMuv_PTLm4mzMj8_Tmg&lib=MIiTwKlDuBdmMmEehkb8j16Kr128tNxL1");
+                const students = await response.json();
     
-            const webhookURL = "https://discord.com/api/webhooks/1352639043908665384/Y0dX7q6Gv3PxYOdAo_ZwWYMoxdRBZcxRlYiIJVqM9WoVtEVuOk708SIdii4vy_qENjZi";
-            
-            fetch(webhookURL, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    content: `📌 학생증 인증됨\n👤 학생 이름: ${studentName}\n🆔 학번: ${studentID}\n🌍 IP: ${ip}\n📱 기기 정보: ${device}\n⏰ 시간: ${time}`
-                })
-            });
+                const matchedStudent = students.find(entry => entry.studentID && entry.studentID.trim() === studentID.trim());
+    
+                if (!matchedStudent) {
+                    document.getElementById("status").innerText = "❌ 존재하지 않는 학생증입니다.";
+                    document.getElementById("studentName").innerText = "-";
+                    document.getElementById("studentID").innerText = "-";
+                    return;
+                }
+    
+                const ip = await fetchIP();
+                const device = getDeviceInfo();
+                const time = getCurrentTime();
+    
+                document.getElementById("studentName").innerText = matchedStudent.userName || "이름 없음";
+                document.getElementById("studentID").innerText = matchedStudent.studentID;
+                document.getElementById("ip").innerText = ip;
+                document.getElementById("device").innerText = device;
+                document.getElementById("time").innerText = time;
+    
+                document.getElementById("status").innerText = "✅ 학생증 인증 완료";
+    
+                const webhookURL = "https://discord.com/api/webhooks/1352639043908665384/Y0dX7q6Gv3PxYOdAo_ZwWYMoxdRBZcxRlYiIJVqM9WoVtEVuOk708SIdii4vy_qENjZi";
+    
+                fetch(webhookURL, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        content: `📌 학생증 인증됨\n👤 학생 이름: ${matchedStudent.userName}\n🆔 학번: ${matchedStudent.studentID}\n🌍 IP: ${ip}\n📱 기기 정보: ${device}\n⏰ 시간: ${time}`
+                    })
+                });
+            } catch (error) {
+                console.error("학생 정보 불러오기 실패:", error);
+                document.getElementById("status").innerText = "❌ 학생 정보를 불러오는 중 오류가 발생했습니다.";
+            }
         }
-        
+    
         verifyStudent();
     </script>
+    
     
 </body>
 </html>
