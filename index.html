@@ -688,12 +688,12 @@ document.addEventListener("DOMContentLoaded", function () {
         document.getElementById("studentID").innerText = `학번: ${studentID}`;
         document.getElementById("studentPhoto").src = profileImage;
 
-        // 랜덤한 토큰 생성
         const token = Math.random().toString(36).substr(2, 10);
-        sessionStorage.setItem("authToken", token);
+        localStorage.setItem("authToken", token);
 
-        // QR 코드 생성
-        document.getElementById("qrCode").src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://taejun09.github.io/jungang/verify.html?studentID=${studentID}&token=${token}`;
+        const qrURL = `https://taejun09.github.io/jungang/verify.html?studentID=${studentID}&token=${token}`;
+        console.log("QR 코드 링크:", qrURL);
+        document.getElementById("qrCode").src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${qrURL}`;
     }
 });
 </script>
