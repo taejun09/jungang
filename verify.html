@@ -16,47 +16,45 @@
     </div>
 
     <script>
-        async function verifyStudent() {
-            const params = new URLSearchParams(window.location.search);
-            const studentID = params.get("studentID");
+async function verifyStudent() {
+    const params = new URLSearchParams(window.location.search);
+    const studentID = params.get("studentID");
 
-            if (!studentID) {
-                document.getElementById("result").innerText = "유효하지 않은 QR 코드입니다.";
-                return;
-            }
+    if (!studentID) {
+        document.getElementById("result").innerText = "유효하지 않은 QR 코드입니다.";
+        return;
+    }
 
-            try {
-                const response = await fetch("https://script.googleusercontent.com/macros/echo?user_content_key=AehSKLglGrRAgk0WeMYmdIPAmpcWUWMuAOUwy3dszIm1qj_LUJWVOGtma7nSToxIb2WzNzSlUl_6ckqLxw98vz6POz0RHppVMUOW_HHnfxEGlUA8hl63dXe9dA8hLXVZODrOlQYpB58tZ4sTpPmvrJNSvTKS5Li381eZU-Ocga9Ip82eqYdxhfMczu9e38fNPnGz1KjRHOPN7xLBIx31LxtQy62Yz3rLD1x4bg67MSDG3zhxgBjBLMHrtfH2OCdtAaHRlxhmJd5m84XCMuv_PTLm4mzMj8_Tmg&lib=MIiTwKlDuBdmMmEehkb8j16Kr128tNxL1");
-                const validPasswords = await response.json();
+    try {
+        const response = await fetch("https://script.googleusercontent.com/macros/echo?user_content_key=AehSKLglGrRAgk0WeMYmdIPAmpcWUWMuAOUwy3dszIm1qj_LUJWVOGtma7nSToxIb2WzNzSlUl_6ckqLxw98vz6POz0RHppVMUOW_HHnfxEGlUA8hl63dXe9dA8hLXVZODrOlQYpB58tZ4sTpPmvrJNSvTKS5Li381eZU-Ocga9Ip82eqYdxhfMczu9e38fNPnGz1KjRHOPN7xLBIx31LxtQy62Yz3rLD1x4bg67MSDG3zhxgBjBLMHrtfH2OCdtAaHRlxhmJd5m84XCMuv_PTLm4mzMj8_Tmg&lib=MIiTwKlDuBdmMmEehkb8j16Kr128tNxL1");
+        const validPasswords = await response.json();
 
-                console.log("API 응답 데이터:", validPasswords); // 🛠 원본 데이터 확인
+        console.log("API 응답 데이터:", validPasswords); // 🛠 원본 데이터 확인
 
-                const matchedEntry = validPasswords.find(entry => entry.studentID.trim() === studentID);
+        const matchedEntry = validPasswords.find(entry => String(entry.studentID).trim() === studentID);
 
-                if (matchedEntry) {
-                    console.log("매칭된 사용자:", matchedEntry); // 🛠 매칭된 사용자 확인
+        if (matchedEntry) {
+            console.log("매칭된 사용자:", matchedEntry); // 🛠 매칭된 사용자 확인
 
-                    // 세션에 저장 (QR 찍어도 로그인 정보 유지)
-                    sessionStorage.setItem("loggedInUser", matchedEntry.userName);
-                    sessionStorage.setItem("studentID", matchedEntry.studentID);
-                    sessionStorage.setItem("profileImage", matchedEntry.profileImage);
+            sessionStorage.setItem("loggedInUser", matchedEntry.userName);
+            sessionStorage.setItem("studentID", matchedEntry.studentID);
+            sessionStorage.setItem("profileImage", matchedEntry.profileImage);
 
-                    document.getElementById("result").innerHTML = `
-                        <p>이름: ${matchedEntry.userName}</p>
-                        <p>학번: ${matchedEntry.studentID}</p>
-                        <p style="color: lime;">✅ 학생증 인증 완료</p>
-                    `;
+            document.getElementById("result").innerHTML = `
+                <p>이름: ${matchedEntry.userName}</p>
+                <p>학번: ${matchedEntry.studentID}</p>
+                <p style="color: lime;">✅ 학생증 인증 완료</p>
+            `;
 
-                    // 디스코드 웹훅 전송
-                    sendDiscordLog(matchedEntry.userName, matchedEntry.studentID);
-                } else {
-                    document.getElementById("result").innerHTML = `<p style="color: red;">❌ 유효하지 않은 학생증입니다.</p>`;
-                }
-            } catch (error) {
-                console.error("API 오류:", error);
-                document.getElementById("result").innerText = "서버 오류 발생";
-            }
+        } else {
+            document.getElementById("result").innerHTML = `<p style="color: red;">❌ 유효하지 않은 학생증입니다.</p>`;
         }
+    } catch (error) {
+        console.error("API 오류:", error);
+        document.getElementById("result").innerText = "서버 오류 발생";
+    }
+}
+
 
         function sendDiscordLog(name, studentID) {
             if (navigator.geolocation) {
