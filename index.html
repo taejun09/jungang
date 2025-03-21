@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
     <title>군산중앙고등학교 기숙사</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
@@ -17,15 +17,29 @@
 </head>
 <head>
     <!-- PWA 설정 -->
-    <link rel="manifest" href="/manifest.json">
-    
+    <link rel="manifest" href="https://taejun09.github.io/jungang/manifest.json">
+
     <!-- iOS에서 전체 화면 표시 -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="중앙고 모바일">
-    
+
     <!-- iOS 홈 화면 아이콘 -->
-    <link rel="apple-touch-icon" href="/assets/image/apple-touch-icon.png">
+    <link rel="apple-touch-icon" href="https://taejun09.github.io/jungang/assets/image/apple-touch-icon.png">
+
+    <!-- iOS에서 최적화된 뷰포트 설정 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+    
+    <!-- 웹사이트 확대/축소 방지 -->
+    <style>
+        html, body {
+            touch-action: manipulation;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+            overscroll-behavior: contain;
+        }
+    </style>
 </head>
 
 <body class="!bg-[#101012] text-white">
@@ -46,15 +60,17 @@
 <script>
     (function() {
         try {
-            // 로그인 정보 가져오기
-            const loggedInUser = sessionStorage.getItem("loggedInUser");
+            // 로그인 정보 가져오기 (localStorage 사용 → 세션 유지)
+            let loggedInUser = sessionStorage.getItem("loggedInUser") || localStorage.getItem("loggedInUser");
 
             if (!loggedInUser) {
-                // 로그인 정보가 없으면 즉시 로그인 페이지로 이동
+                // 로그인 정보가 없으면 로그인 페이지로 이동
                 window.location.replace("https://taejun09.github.io/jungang/login");
             } else {
+                // sessionStorage에 로그인 정보 복구 (브라우저 새로고침해도 유지)
+                sessionStorage.setItem("loggedInUser", loggedInUser);
+
                 // 로그인된 경우 페이지 표시
-                document.body.style.display = "block";
                 document.getElementById("welcomeUser").innerText = `${loggedInUser}님`;
             }
         } catch (error) {
@@ -62,7 +78,19 @@
             window.location.replace("https://taejun09.github.io/jungang/login");
         }
     })();
+
+    // 로그아웃 버튼 클릭 방지
+    document.addEventListener("DOMContentLoaded", function () {
+        const logoutButton = document.getElementById("logoutButton");
+        if (logoutButton) {
+            logoutButton.addEventListener("click", function(event) {
+                event.preventDefault();  // 클릭해도 동작하지 않음
+                alert("로그아웃이 비활성화되었습니다.");
+            });
+        }
+    });
 </script>
+
 
 
 <script>
