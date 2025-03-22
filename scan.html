@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR 코드 스캔</title>
+    <script src="https://unpkg.com/html5-qrcode/minified/html5-qrcode.min.js"></script>
+    <style>
+        body {
+            font-family: 'Pretendard', sans-serif;
+            background-color: #121212;
+            color: #E0E0E0;
+            text-align: center;
+            padding: 20px;
+        }
+        .qr-container {
+            margin-top: 20px;
+            border-radius: 12px;
+            padding: 20px;
+            background: linear-gradient(135deg, #1F1F1F, #2A2A2A);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            display: inline-block;
+            width: 90%;
+            max-width: 500px;
+        }
+        .status {
+            margin-top: 15px;
+            font-size: 16px;
+            font-weight: bold;
+            color: #acff8c;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>QR 코드 스캔</h2>
+    <p>QR 코드를 스캔하여 인증을 진행하세요.</p>
+    
+    <div id="qr-reader" class="qr-container"></div>
+
+    <p id="status" class="status">🔄 QR 코드를 스캔하세요...</p>
+    
+    <script>
+        function onScanSuccess(decodedText, decodedResult) {
+            // QR 코드에서 얻은 URL을 파싱하여 학생증 인증 페이지로 이동
+            const urlParams = new URLSearchParams(decodedText.split('?')[1]);
+            const studentID = urlParams.get("studentID");
+
+            if (studentID) {
+                document.getElementById("status").innerText = `✅ 학번: ${studentID} 인증 중...`;
+
+                // 인증 페이지로 이동
+                window.location.href = `verify.html?studentID=${studentID}`;
+            } else {
+                document.getElementById("status").innerText = "❌ 유효하지 않은 QR 코드입니다.";
+            }
+        }
+
+        function onScanError(errorMessage) {
+            // 오류 발생 시
+            console.log("QR 코드 스캔 오류:", errorMessage);
+        }
+
+        // QR 코드 스캔을 시작합니다.
+        const html5QrCode = new Html5Qrcode("qr-reader");
+
+        html5QrCode.start(
+            { facingMode: "environment" }, // 카메라 사용 설정
+            {
+                fps: 10,    // 초당 10프레임으로 스캔
+                qrbox: { width: 250, height: 250 }  // QR 코드의 크기 설정
+            },
+            onScanSuccess,
+            onScanError
+        );
+    </script>
+
+</body>
+</html>
