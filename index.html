@@ -17,15 +17,15 @@
 </head>
 <head>
     <!-- PWA 설정 -->
-    <link rel="manifest" href="/manifest.json">
+    <link rel="manifest" href="https://taejun09.github.io/jungang/manifest.json">
     
     <!-- iOS에서 전체 화면 표시 -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="중앙고 모바일">
+    <meta name="apple-mobile-web-app-title" content="중앙고 기숙사 모바일">
     
     <!-- iOS 홈 화면 아이콘 -->
-    <link rel="apple-touch-icon" href="/assets/image/apple-touch-icon.png">
+    <link rel="apple-touch-icon" href="https://taejun09.github.io/jungang/assets/image/apple-touch-icon.png">
 </head>
 
 <body class="!bg-[#101012] text-white">
@@ -65,14 +65,7 @@
 </script>
 
 
-<script>
-    // 노트북(1024px) 이상에서만 팝업 표시 및 블러 처리
-    if (window.innerWidth >= 1024) {
-        document.getElementById("overlay").style.display = "block";
-        document.getElementById("pc-popup").style.display = "block";
-        document.body.style.overflow = "hidden"; // 스크롤 방지
-    }
-</script>
+
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {
@@ -192,6 +185,83 @@
         updateLastClickTimes();
     });
 </script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const reasonPopup = document.getElementById("reason-popup");
+        const closeReasonPopupBtn = document.getElementById("close-reason-popup");
+        const readingRoomBtn = document.getElementById("reading-room-btn");
+        const submitReasonBtn = document.getElementById("submit-reason");
+        const reasonText = document.getElementById("reason-text");
+        const reasonCategory = document.getElementById("reason-category");
+
+        function showAlert(message) {
+            alert(message);
+        }
+
+        readingRoomBtn.addEventListener("click", function (event) {
+            event.preventDefault();
+            reasonPopup.classList.remove("hidden");
+        });
+
+        closeReasonPopupBtn.addEventListener("click", function () {
+            reasonPopup.classList.add("hidden");
+        });
+
+        reasonCategory.addEventListener("change", function () {
+            if (reasonCategory.value === "기타") {
+                reasonText.classList.remove("hidden");
+            } else {
+                reasonText.classList.add("hidden");
+            }
+        });
+
+        submitReasonBtn.addEventListener("click", async function () {
+            const category = reasonCategory.value;
+            const reason = reasonText.value.trim();
+            
+            if (!category) {
+                showAlert("이동 사유를 선택해주세요.");
+                return;
+            }
+            
+            if (category === "기타" && !reason) {
+                showAlert("기타 사유를 입력해주세요.");
+                return;
+            }
+
+            const webhookUrl = "https://discord.com/api/webhooks/1350727157214871612/4cIG2DR-1MqC6hen4TjarIBSlaZ18OrelmBxQVK61hzGtiub-CBBkOcupK-7rjrG26pY";
+            const payload = {
+                embeds: [{
+                    title: "📌 열람실 이동 사유",
+                    color: 3447003,
+                    fields: [
+                        { name: "카테고리", value: category, inline: true },
+                        { name: "사유", value: category === "기타" ? reason : "(내용 없음)", inline: false }
+                    ],
+                    timestamp: new Date().toISOString()
+                }]
+            };
+
+            try {
+                await fetch(webhookUrl, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+                showAlert("이동 사유가 제출되었습니다.");
+                reasonPopup.classList.add("hidden");
+                reasonCategory.value = "";
+                reasonText.value = "";
+                reasonText.classList.add("hidden");
+            } catch (error) {
+                console.error("전송 오류:", error);
+                showAlert("전송 과정에서 문제가 발생했어요.");
+            }
+        });
+    });
+</script>
+
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {
@@ -466,17 +536,28 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 </script>
+
+<script>
+  window.onload = function() {
+    if (window.innerWidth >= 1024) {
+        document.getElementById("overlay").style.display = "block";
+        document.getElementById("pc-popup").style.display = "block";
+        document.body.style.overflow = "hidden"; // 스크롤 방지
+    }
+};
+
+</script>
+<div id="overlay"></div>
+<div id="pc-popup">
+    <p><strong>이 서비스는 모바일에서만 이용가능해요! PC에서는 이용할 수 없어요 😢</strong></p>
+</div>
+
+
 </body>
 </head>
 
 
 <body>
-
-    <div id="overlay"></div>
-    <div id="pc-popup">
-        <p><strong>이 서비스는 모바일에서만 이용가능해요! PC에서는 이용할 수 없어요 😢</strong></p>
-    </div>
-
 
 <!-- 탐색하기 -->
 <div class="bg-[#18181c] p-4 rounded-lg mb-4">

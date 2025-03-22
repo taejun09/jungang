@@ -1,19 +1,19 @@
 {
     "name": "중앙고 기숙사 모바일",
-    "short_name": "중앙고",
+    "short_name": "중앙고 기숙사 모바일",
     "start_url": "/jungang/index.html",
-    "display": "standalone",
+    "display": "fullscreen",
     "scope": "/jungang/",
     "background_color": "#18181c",
     "theme_color": "#18181c",
     "icons": [
         {
-            "src": "https://taejun09.github.io/jungang/assets/image/icon-192.png",
+            "src": "https://taejun09.github.io/jungang/assets/image/web-app-manifest-192x192.png",
             "sizes": "192x192",
             "type": "image/png"
         },
         {
-            "src": "https://taejun09.github.io/jungang/assets/image/icon-512.png",
+            "src": "https://taejun09.github.io/jungang/assets/image/web-app-manifest-512x512.png",
             "sizes": "512x512",
             "type": "image/png"
         }

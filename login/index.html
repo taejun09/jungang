@@ -12,6 +12,20 @@
 <link rel="manifest" href="https://taejun09.github.io/jungang/assets/image/site.webmanifest" />
 <link href="jungang-login.css" rel="stylesheet" type="text/css"/>
 </head>
+
+<head>
+    <!-- PWA 설정 -->
+    <link rel="manifest" href="https://taejun09.github.io/jungang/manifest.json">
+    
+    <!-- iOS에서 전체 화면 표시 -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="중앙고 기숙사 모바일">
+    
+    <!-- iOS 홈 화면 아이콘 -->
+    <link rel="apple-touch-icon" href="https://taejun09.github.io/jungang/assets/image/apple-touch-icon.png">
+</head>
+
 <body>
     <!-- 로그인창 -->
     <img class="logo" src="https://ifh.cc/g/ttkYGN.png" alt="회사 로고">
@@ -74,7 +88,7 @@
             sessionStorage.setItem("studentID", matchedEntry.id);
             sessionStorage.setItem("profileImage", matchedEntry.image);
 
-            window.location.href = "https://taejun09.github.io/jungang";
+            window.location.href = "http://127.0.0.1:5500/index.html";
         } else {
             showCustomAlert("입력하신 인증코드나 이름이 틀린 것 같아요! <br> 다시 한 번 확인해 주세요.");
         }
