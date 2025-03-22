@@ -86,7 +86,9 @@
                 },
                 onScanSuccess,
                 onScanError
-            );
+            ).catch(err => {
+                console.error("QR 코드 스캔 시작 오류:", err);
+            });
         }
 
         // 카메라 권한을 요청하고 스캔 시작
