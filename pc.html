@@ -16,13 +16,15 @@
     </head>
        
     <script>
-        window.onload = function() {
-
+        document.addEventListener("DOMContentLoaded", function() {
+            // 화면 너비가 768px 이하인 경우 모바일로 간주
             if (window.innerWidth <= 768) {
+                // 모바일일 때 리다이렉트할 URL
                 window.location.href = "https://taejun09.github.io/jungang/";
             }
-        };
+        });
     </script>
+    
 
         <div class="section jungang">
             <div class="container jungang _80px-padding">
@@ -78,7 +80,7 @@
                         </div>
                     </div>
                     <div id="jungang-banner-img" class="image-wrap jungang">
-                        <img src="/assets/image/jungang-stay.png" loading="lazy"  alt="" class="_100-image"/>
+                        <img src="https://taejun09.github.io/jungang/assets/image/jungang-stay.png" loading="lazy"  alt=""/>
                     </div>
                 </div>
             </div>
