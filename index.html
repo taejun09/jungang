@@ -240,6 +240,14 @@
         });
     
         submitReportBtn.addEventListener("click", async function () {
+            const today = new Date().getDay(); // 0: 일요일, 6: 토요일
+    
+            if (today === 6) { // 토요일 체크
+                showAlert("오늘은 제출할 수 없어요.");
+                return;
+            }
+    
+            const loggedInUser = sessionStorage.getItem("loggedInUser") || "알 수 없음"; // 사용자 정보 가져오기
             const category = reportCategory.value;
             const room = reportRoom.value.trim();
             const reportContent = reportText.value.trim();
@@ -265,9 +273,10 @@
                     title: "📢 고장 신고 접수",
                     color: 15158332,
                     fields: [
-                        { name: "카테고리", value: category, inline: true },
-                        { name: "호실", value: room, inline: true },
-                        { name: "내용", value: category === "기타" ? reportContent : "(내용 없음)", inline: false }
+                        { name: "👤 신고자", value: loggedInUser, inline: false },  // 신고자 추가
+                        { name: "📌 카테고리", value: category, inline: true },
+                        { name: "🏠 호실", value: room, inline: true },
+                        { name: "📜 내용", value: category === "기타" ? reportContent : "(내용 없음)", inline: false }
                     ],
                     timestamp: new Date().toISOString()
                 }]
@@ -280,7 +289,7 @@
                     body: JSON.stringify(payload)
                 });
     
-                showAlert("신고가 접수되었습니다.");
+                showAlert("신고를 사감선생님께 전달했어요!");
                 reportPopup.classList.add("hidden");
                 reportCategory.value = "";
                 reportRoom.value = "";
@@ -308,159 +317,295 @@
 </script>
 
 <script>
-document.addEventListener("DOMContentLoaded", function () {
-    const popup = document.getElementById("popup");
-    const closePopupBtn = document.getElementById("closePopup");
-    const submitBtn = document.getElementById("submitRequest");
-    const popupTitle = document.getElementById("popupTitle");
-    const dateInput = document.getElementById("date");
-    const timeInput = document.getElementById("time");
-    const teacherInput = document.getElementById("teacher");
-    const reasonInput = document.getElementById("reason");
-    const discordWebhookUrl = "https://discord.com/api/webhooks/1350619474730029066/2ktapgJj0EbBureDTrKABC2CieIxDOXxcxWxx-fmu34iFyw3KFyYdnI-NxIkFO2-4-9j";
-    let requestType = "출입 신청";
-
+    document.addEventListener("DOMContentLoaded", function () {
+        const popup = document.getElementById("popup");
+        const closePopupBtn = document.getElementById("closePopup");
+        const submitBtn = document.getElementById("submitRequest");
+        const popupTitle = document.getElementById("popupTitle");
+        const dateInput = document.getElementById("date");
+        const timeInput = document.getElementById("time");
+        const teacherInput = document.getElementById("teacher");
+        const reasonInput = document.getElementById("reason");
+        const discordWebhookUrl = "https://discord.com/api/webhooks/1350619474730029066/2ktapgJj0EbBureDTrKABC2CieIxDOXxcxWxx-fmu34iFyw3KFyYdnI-NxIkFO2-4-9j";
+        let requestType = "출입 신청";
+    
+        function getTeacherByDay() {
+            const days = ["일요일", "월요일", "화요일", "수요일", "목요일", "금요일", "토요일"];
+            const teachers = {
+                "일요일": "김동신",
+                "월요일": "이동걸",
+                "화요일": "양인석",
+                "수요일": "김동신",
+                "목요일": "이동걸",
+                "금요일": "양인석",
+                "토요일": "없음"
+            };
+            let today = new Date();
+            return teachers[days[today.getDay()]];
+        }
+    
+        function getRoleMention(teacher) {
+            const roleMentions = {
+                "김동신": "<@&1350654320739221545>",
+                "이동걸": "<@&1350654434647998494>",
+                "양인석": "<@&1350654515929415680>"
+            };
+            return roleMentions[teacher] || "";
+        }
+    
+        document.querySelectorAll(".space-y-2 button").forEach(button => {
+            button.addEventListener("click", function () {
+                let now = new Date();
+                dateInput.value = now.toISOString().split("T")[0];
+                timeInput.value = now.toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+                teacherInput.value = getTeacherByDay();
+                reasonInput.value = "";
+    
+                let rawType = this.parentElement.querySelector("span").innerText.trim();
+                if (rawType.includes("외출")) {
+                    requestType = "외출";
+                } else if (rawType.includes("외박")) {
+                    requestType = "외박";
+                } else if (rawType.includes("조기")) {
+                    requestType = "조기퇴소";
+                } else {
+                    requestType = "출입 신청";
+                }
+    
+                popupTitle.innerText = requestType;
+                console.log("선택된 신청 유형:", requestType);
+                popup.classList.remove("hidden");
+            });
+        });
+    
+        closePopupBtn.addEventListener("click", function () {
+            popup.classList.add("hidden");
+        });
+    
+        submitBtn.addEventListener("click", function () {
+            const today = new Date().getDay(); // 0: 일요일, 6: 토요일
+    
+            if (today === 6) { // 토요일이면 신청 불가
+                showCustomAlert("오늘은 제출 할 수 없어요.");
+                return;
+            }
+    
+            const loggedInUser = sessionStorage.getItem("loggedInUser") || "알 수 없음";
+            const teacher = teacherInput.value;
+            const roleMention = getRoleMention(teacher);
+            const reason = reasonInput.value.trim();
+    
+            if (!reason) {
+                reasonInput.classList.add("highlight");
+                reasonInput.placeholder = "사유를 작성해주세요. 예) 개인사유";
+                return;
+            }
+    
+            reasonInput.classList.remove("highlight");
+    
+            const requestData = {
+                username: "출입 신청 알림",
+                avatar_url: "https://ifh.cc/g/gqo9gX.jpg",
+                content: roleMention,
+                embeds: [
+                    {
+                        title: "📌 출입 신청 알림",
+                        color: 0x3498db,
+                        fields: [
+                            { name: "📝 신청 유형", value: requestType, inline: false },
+                            { name: "👤 신청자", value: loggedInUser, inline: false },
+                            { name: "📅 날짜", value: dateInput.value, inline: false },
+                            { name: "⏰ 제출 시간", value: timeInput.value, inline: false },
+                            { name: "👨‍🏫 사감 선생님", value: teacher, inline: false },
+                            { name: "📌 제출 사유", value: reason, inline: false }
+                        ],
+                        footer: {
+                            text: "출입 관리 시스템 | 군산중앙고등학교",
+                            icon_url: "https://ifh.cc/g/30Dsx9.png"
+                        },
+                        timestamp: new Date().toISOString()
+                    }
+                ]
+            };
+    
+            fetch(discordWebhookUrl, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(requestData)
+            })
+            .then(response => {
+                if (response.ok) {
+                    let customMessage = "";
+                    switch (requestType) {
+                        case "외출":
+                            customMessage = "외출 신청을 사감선생님께 전달했어요!";
+                            break;
+                        case "외박":
+                            customMessage = "외박 신청을 사감선생님께 전달했어요!";
+                            break;
+                        case "조기":
+                            customMessage = "조기퇴사 신청을 사감선생님께 전달했어요!";
+                            break;
+                        default:
+                            customMessage = "출입 신청이 성공적으로 제출되었습니다.";
+                    }
+                    showCustomAlert(customMessage);
+                    popup.classList.add("hidden");
+                } else {
+                    showCustomAlert("출입 신청 전송에 실패했습니다.");
+                }
+            })
+            .catch(error => {
+                console.error("전송 오류:", error);
+                showCustomAlert("네트워크 오류가 발생했습니다.");
+            });
+        });
+    
+        function showCustomAlert(message) {
+            const alertBox = document.getElementById("custom-alert");
+            const alertMessage = document.getElementById("custom-alert-message");
+            alertMessage.innerText = message;
+            alertBox.classList.remove("hidden");
+            setTimeout(() => {
+                alertBox.classList.add("hidden");
+            }, 3000);
+        }
+    });
+    </script>
     
 
-    function getTeacherByDay() {
-        const days = ["일요일", "월요일", "화요일", "수요일", "목요일", "금요일", "토요일"];
-        const teachers = {
-            "일요일": "김동신",
-            "월요일": "이동걸",
-            "화요일": "양인석",
-            "수요일": "김동신",
-            "목요일": "이동걸",
-            "금요일": "양인석",
-            "토요일": "없음"
-        };
-        let today = new Date();
-        return teachers[days[today.getDay()]];
-    }
+<!-- 이동 사유 입력 팝업 -->
+<div id="reason-popup" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center hidden z-50">
+    <div class="bg-[#1e1e22] p-5 rounded-2xl w-[340px] shadow-lg relative" id="reason-popup-content">
+        <button id="close-reason-popup" class="absolute top-5 right-6 text-[#bfbfbf] hover:text-white transition">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
 
-    function getRoleMention(teacher) {
-        const roleMentions = {
-            "김동신": "<@&1350654320739221545>",
-            "이동걸": "<@&1350654434647998494>",
-            "양인석": "<@&1350654515929415680>"
-        };
-        return roleMentions[teacher] || "";
-    }
+        <h2 class="text-xl font-bold mb-4 text-[#D9D9D9] flex items-center">
+            <i class="fas fa-door-open mr-2"></i> 열람실 이동 사유
+        </h2>
 
-    document.querySelectorAll(".space-y-2 button").forEach(button => {
-    button.addEventListener("click", function () {
-        let now = new Date();
-        dateInput.value = now.toISOString().split("T")[0];
-        timeInput.value = now.toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
-        teacherInput.value = getTeacherByDay();
-        reasonInput.value = "";
+        <!-- 카테고리 선택 -->
+        <select id="reason-category" class="w-full p-2 bg-[#29292e] text-[#D9D9D9] rounded-md mb-3">
+            <option value="">카테고리를 선택하세요</option>
+            <option value="휴식">휴식</option>
+            <option value="기타">기타</option>
+        </select>
 
-        // requestType을 정확한 값으로 설정
-        let rawType = this.parentElement.querySelector("span").innerText.trim();
-        if (rawType.includes("외출")) {
-            requestType = "외출";
-        } else if (rawType.includes("외박")) {
-            requestType = "외박";
-        } else if (rawType.includes("조기")) {
-            requestType = "조기퇴소";
-        } else {
-            requestType = "출입 신청";
+        <!-- 기타 선택 시 내용 입력 -->
+        <textarea id="reason-text" class="w-full p-2 bg-[#29292e] text-[#D9D9D9] rounded-md hidden" rows="4" placeholder="이동 사유를 입력하세요"></textarea>
+
+        <button id="submit-reason" class="mt-3 bg-[#363740] text-white px-4 py-2 rounded-lg w-full hover:bg-[#2f3033] transition">
+            제출하기
+        </button>
+    </div>
+</div>
+
+<!-- 알림 메시지 -->
+<div id="custom-alert" class="fixed bottom-5 left-1/2 transform -translate-x-1/2 bg-[#29292e] text-white py-2 px-4 rounded-lg shadow-lg hidden flex items-center whitespace-nowrap overflow-hidden text-ellipsis">
+    <i class="fa-regular fa-circle-check mr-2"></i>
+    <span id="custom-alert-message">이동 사유를 사감선생님께 전달했어요!</span>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const reasonPopup = document.getElementById("reason-popup");
+        const closeReasonPopupBtn = document.getElementById("close-reason-popup");
+        const readingRoomBtn = document.getElementById("reading-room-btn");
+        const submitReasonBtn = document.getElementById("submit-reason");
+        const reasonText = document.getElementById("reason-text");
+        const reasonCategory = document.getElementById("reason-category");
+        const customAlert = document.getElementById("custom-alert");
+        const customAlertMessage = document.getElementById("custom-alert-message");
+    
+        function showAlert(message) {
+            customAlertMessage.textContent = message;
+            customAlert.classList.remove("hidden");
+            setTimeout(() => {
+                customAlert.classList.add("hidden");
+            }, 3000);
         }
-
-        popupTitle.innerText = requestType;
-        console.log("선택된 신청 유형:", requestType); // 디버깅용 로그 추가
-        popup.classList.remove("hidden");
-    });
-});
-
-
-    closePopupBtn.addEventListener("click", function () {
-        popup.classList.add("hidden");
-    });
-
-    submitBtn.addEventListener("click", function () {
-        const loggedInUser = sessionStorage.getItem("loggedInUser") || "알 수 없음";
-        const teacher = teacherInput.value;
-        const roleMention = getRoleMention(teacher);
-        const reason = reasonInput.value.trim();
-
-        if (!reason) {
-            reasonInput.classList.add("highlight");
-            reasonInput.placeholder = "사유를 작성해주세요. 예) 개인사유";
-            return;
-        }
-
-        reasonInput.classList.remove("highlight");
-
-        const requestData = {
-            username: "출입 신청 알림",
-            avatar_url: "https://ifh.cc/g/gqo9gX.jpg",
-            content: roleMention,
-            embeds: [
-                {
-                    title: "📌 출입 신청 알림",
-                    color: 0x3498db,
-                    fields: [
-                        { name: "📝 신청 유형", value: requestType, inline: false },
-                        { name: "👤 신청자", value: loggedInUser, inline: false },
-                        { name: "📅 날짜", value: dateInput.value, inline: false },
-                        { name: "⏰ 제출 시간", value: timeInput.value, inline: false },
-                        { name: "👨‍🏫 사감 선생님", value: teacher, inline: false },
-                        { name: "📌 제출 사유", value: reason, inline: false }
-                    ],
-                    footer: {
-                        text: "출입 관리 시스템 | 군산중앙고등학교",
-                        icon_url: "https://ifh.cc/g/30Dsx9.png"
-                    },
-                    timestamp: new Date().toISOString()
-                }
-            ]
-        };
-
-        fetch(discordWebhookUrl, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(requestData)
-        })
-        .then(response => {
-            if (response.ok) {
-                let customMessage = "";
-                switch (requestType) {
-                    case "외출":
-                        customMessage = "외출 신청을 사감선생님께 전달했어요!";
-                        break;
-                    case "외박":
-                        customMessage = "외박 신청을 사감선생님께 전달했어요!";
-                        break;
-                    case "조기":
-                        customMessage = "조기퇴사 신청을 사감선생님께 전달했어요!";
-                        break;
-                    default:
-                        customMessage = "출입 신청이 성공적으로 제출되었습니다.";
-                }
-                showCustomAlert(customMessage);
-                popup.classList.add("hidden");
+    
+        readingRoomBtn.addEventListener("click", function (event) {
+            event.preventDefault();
+            reasonPopup.classList.remove("hidden");
+        });
+    
+        closeReasonPopupBtn.addEventListener("click", function () {
+            reasonPopup.classList.add("hidden");
+        });
+    
+        reasonCategory.addEventListener("change", function () {
+            if (reasonCategory.value === "기타") {
+                reasonText.classList.remove("hidden");
             } else {
-                showCustomAlert("출입 신청 전송에 실패했습니다.");
+                reasonText.classList.add("hidden");
             }
-        })
-        .catch(error => {
-            console.error("전송 오류:", error);
-            showCustomAlert("네트워크 오류가 발생했습니다.");
+        });
+    
+        submitReasonBtn.addEventListener("click", async function () {
+            const today = new Date().getDay(); // 0: 일요일, 6: 토요일
+    
+            if (today === 6) { // 토요일 체크
+                showAlert("오늘은 제출할 수 없어요.");
+                return;
+            }
+    
+            const category = reasonCategory.value;
+            const reason = reasonText.value.trim();
+    
+            if (!category) {
+                showAlert("이동 사유를 선택해주세요.");
+                return;
+            }
+    
+            if (category === "기타" && !reason) {
+                showAlert("기타 사유를 입력해주세요.");
+                return;
+            }
+    
+            // ✅ 로그인된 사용자 정보 가져오기
+            const userName = localStorage.getItem("loggedInUser") || "알 수 없음";
+            const studentID = localStorage.getItem("studentID") || "미입력";
+            const profileImage = localStorage.getItem("profileImage") || "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+    
+            const webhookUrl = "https://discord.com/api/webhooks/1352968334538444830/Dk_Gtl0irsyucU1fwNywFkf5teWwzm6UZjRRoWcvwEHt9pB3JiSwYTJA2lxY24Nz6kgY";
+            const payload = {
+                embeds: [{
+                    title: "📌 열람실 이동 사유",
+                    color: 3447003,
+                    fields: [
+                        { name: "👤 이름", value: userName, inline: true },
+                        { name: "📌 학번", value: studentID, inline: true },
+                        { name: "📌 카테고리", value: category, inline: true },
+                        { name: "📜 사유", value: category === "기타" ? reason : "(내용 없음)", inline: false }
+                    ],
+                    thumbnail: { url: profileImage }, // 프로필 이미지 추가
+                    timestamp: new Date().toISOString()
+                }]
+            };
+    
+            try {
+                await fetch(webhookUrl, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+    
+                showAlert("✅ 이동 사유가 제출되었습니다.");
+                reasonPopup.classList.add("hidden");
+                reasonCategory.value = "";
+                reasonText.value = "";
+                reasonText.classList.add("hidden");
+            } catch (error) {
+                console.error("전송 오류:", error);
+                showAlert("전송 과정에서 문제가 발생했어요.");
+            }
         });
     });
+    </script>
 
-    function showCustomAlert(message) {
-        const alertBox = document.getElementById("custom-alert");
-        const alertMessage = document.getElementById("custom-alert-message");
-        alertMessage.innerText = message;
-        alertBox.classList.remove("hidden");
-        setTimeout(() => {
-            alertBox.classList.add("hidden");
-        }, 3000);
-    }
-});
 
-</script>
 
 <script>
     // 화면의 너비가 1024px 이상이면 PC로 간주하고 리다이렉트
@@ -485,7 +630,7 @@ document.addEventListener("DOMContentLoaded", function () {
         <a href="#" class="grid-item" id="report-btn" data-key="report">
             <span class="bottom-text">고장신고 · <span class="last-click" id="last-click-report">-</span></span>
         </a>
-        <a href="#" class="grid-item large" data-key="reading-room">
+        <a href="#" class="grid-item large" id="reading-room-btn" data-key="reading-room">
             <span class="bottom-text">열람실 · <span class="last-click" id="last-click-reading-room">-</span></span>
         </a>
         <a href="#" class="grid-item" id="meal-info-btn" data-key="meal-info">
@@ -493,6 +638,8 @@ document.addEventListener("DOMContentLoaded", function () {
         </a>        
     </div>
 </div>
+
+
 
 <!-- 모바일 학생증 -->
 <div class="bg-[#18181c] p-4 rounded-lg mb-4">
