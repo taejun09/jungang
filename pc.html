@@ -56,9 +56,25 @@
                 <div class="content-grid">
                     <div id="jungang-banner" class="text-column _500px-max-width _40px-padding">
                         <p id="kst-time" class="small-text large-text"></p>
-                        <h2 class="h2-title">
-                            기숙사를 <br> 이용중이라면
-                        </h2>
+                        <h2 class="h2-title" id="changing-text">기숙사생이라면 <br> 더 편리하게!</h2>
+
+                        <script>
+                            document.addEventListener("DOMContentLoaded", function () {
+                                const textElement = document.getElementById("changing-text");
+                                const messages = [
+                                    "기숙사생이라면 <br> 더 편리하게!",
+                                    "기숙사생이라면 <br> 더욱 간편하게!",
+                                    "기숙사생이라면 <br> 꼭 필요한 서비스!"
+                                ];
+                                let index = 0;
+                        
+                                setInterval(() => {
+                                    index = (index + 1) % messages.length;
+                                    textElement.innerHTML = messages[index];
+                                }, 3000);
+                            });
+                        </script>
+                        
                         <p class="large-text _30px-margin">스마트폰으로 QR 코드를 스캔하고, 기숙사 어플을 이용해보세요!</p>
                         <div class="svg-grid">
                             <p class="text">
