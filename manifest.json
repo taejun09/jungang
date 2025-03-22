@@ -1,6 +1,6 @@
 {
-    "name": "중앙고 기숙사 모바일",
-    "short_name": "중앙고 기숙사 모바일",
+    "name": "군산 중앙고등학교 스테이",
+    "short_name": "군산 중앙스테이",
     "start_url": "/jungang/index.html",
     "display": "fullscreen",
     "scope": "/jungang/",
