@@ -44,7 +44,7 @@
         // 카메라 권한 요청 및 처리
         async function requestCameraPermission() {
             try {
-                await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
                 console.log("카메라 권한이 허용되었습니다.");
                 startQRCodeScanner();
             } catch (err) {
@@ -56,23 +56,25 @@
         // QR 코드 스캔을 시작하는 함수
         function startQRCodeScanner() {
             function onScanSuccess(decodedText, decodedResult) {
+                console.log("스캔 성공:", decodedText); // 디코딩된 텍스트 출력
                 // QR 코드에서 얻은 URL을 파싱하여 학생증 인증 페이지로 이동
                 const urlParams = new URLSearchParams(decodedText.split('?')[1]);
                 const studentID = urlParams.get("studentID");
 
                 if (studentID) {
                     document.getElementById("status").innerText = `✅ 학번: ${studentID} 인증 중...`;
+                    console.log("학번:", studentID); // 학번 출력
 
                     // 인증 페이지로 이동
                     window.location.href = `verify.html?studentID=${studentID}`;
                 } else {
                     document.getElementById("status").innerText = "❌ 유효하지 않은 QR 코드입니다.";
+                    console.log("유효하지 않은 QR 코드"); // 잘못된 QR 코드 출력
                 }
             }
 
             function onScanError(errorMessage) {
-                // 오류 발생 시
-                console.log("QR 코드 스캔 오류:", errorMessage);
+                console.error("QR 코드 스캔 오류:", errorMessage); // 오류 발생 시 콘솔 출력
             }
 
             // QR 코드 스캔을 시작합니다.
