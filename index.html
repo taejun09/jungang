@@ -924,32 +924,56 @@
 </footer>
 
 
-<script>
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('/service-worker.js')
-                .then(registration => {
-                    console.log('Service Worker registered with scope:', registration.scope);
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PWA 예제</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <h1>Progressive Web App (PWA) 예제</h1>
+    <p>여기는 PWA 앱입니다. 캐싱 및 업데이트 기능이 작동합니다.</p>
 
-                    registration.onupdatefound = () => {
-                        const installingWorker = registration.installing;
+    <script>
+        // 서비스 워커 등록
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/service-worker.js').then(registration => {
+                console.log('✅ Service Worker 등록 성공:', registration.scope);
 
-                        installingWorker.onstatechange = () => {
-                            if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                                console.log('New content is available, please refresh.');
-                                alert('새로운 업데이트가 있습니다! 페이지를 새로 고침하세요.');
-                                window.location.reload();
-                            }
-                        };
+                // 업데이트가 있을 때 처리
+                registration.onupdatefound = () => {
+                    const newWorker = registration.installing;
+                    console.log('🚀 새 서비스 워커 감지됨!');
+
+                    // 새 워커 상태가 'installed'일 때
+                    newWorker.onstatechange = () => {
+                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                            console.log('🔄 새로운 업데이트가 있습니다!');
+
+                            // 📢 사용자에게 알림 표시
+                            alert('새로운 업데이트가 있습니다! 페이지를 새로 고침하세요.');
+
+                            // 새로운 서비스 워커 즉시 활성화
+                            newWorker.postMessage({ type: 'skipWaiting' });
+
+                            // 페이지 자동 새로 고침
+                            window.location.reload();
+                        }
                     };
-                })
-                .catch(error => {
-                    console.log('Service Worker registration failed:', error);
-                });
-        });
-    }
-</script>
-  
+                };
+            }).catch(error => {
+                console.log('❌ Service Worker 등록 실패:', error);
+            });
+
+            // 서비스 워커 컨트롤러가 변경될 때 페이지 새로고침
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                console.log('🔄 서비스 워커가 새로 고침됨!');
+                window.location.reload();
+            });
+        }
+    </script>
 </div>
 </body>
 </html>
