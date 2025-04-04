@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>비밀번호 & 생체 로그인</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
+        input { padding: 10px; margin: 10px; width: 200px; }
+        button { padding: 10px 20px; margin: 10px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h2>로그인</h2>
+    <input type="password" id="password" placeholder="비밀번호 입력"><br>
+    <button onclick="login()">로그인</button>
+    <button onclick="useBiometric()">생체 로그인</button>
+
+    <script>
+        const storedPassword = "1234"; // 실제 서비스에서는 해싱된 값 사용!
+
+        function login() {
+            const inputPassword = document.getElementById("password").value;
+            if (inputPassword === storedPassword) {
+                alert("로그인 성공!");
+            } else {
+                alert("비밀번호가 틀렸습니다!");
+            }
+        }
+
+        async function useBiometric() {
+            if (!window.PublicKeyCredential) {
+                alert("이 브라우저는 WebAuthn을 지원하지 않습니다.");
+                return;
+            }
+
+            try {
+                const credential = await navigator.credentials.get({
+                    publicKey: {
+                        challenge: new Uint8Array([1,2,3,4]), // 임시 데이터
+                        allowCredentials: [],
+                        timeout: 60000,
+                        userVerification: "required"
+                    }
+                });
+
+                if (credential) {
+                    alert("생체 로그인 성공!");
+                }
+            } catch (error) {
+                alert("생체 인증 실패: " + error.message);
+            }
+        }
+    </script>
+</body>
+</html>
