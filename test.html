@@ -3,42 +3,76 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>비밀번호 & 생체 로그인</title>
+    <title>생체 로그인 (WebAuthn)</title>
     <style>
         body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
-        input { padding: 10px; margin: 10px; width: 200px; }
-        button { padding: 10px 20px; margin: 10px; cursor: pointer; }
+        button { padding: 10px 20px; margin: 10px; cursor: pointer; font-size: 16px; }
     </style>
 </head>
 <body>
-    <h2>로그인</h2>
-    <input type="password" id="password" placeholder="비밀번호 입력"><br>
-    <button onclick="login()">로그인</button>
-    <button onclick="useBiometric()">생체 로그인</button>
+    <h2>생체 로그인</h2>
+    <button onclick="registerCredential()">생체 정보 등록</button>
+    <button onclick="authenticate()">생체 로그인</button>
 
     <script>
-        const storedPassword = "1234"; // 실제 서비스에서는 해싱된 값 사용!
-
-        function login() {
-            const inputPassword = document.getElementById("password").value;
-            if (inputPassword === storedPassword) {
-                alert("로그인 성공!");
-            } else {
-                alert("비밀번호가 틀렸습니다!");
-            }
-        }
-
-        async function useBiometric() {
+        async function registerCredential() {
             if (!window.PublicKeyCredential) {
                 alert("이 브라우저는 WebAuthn을 지원하지 않습니다.");
                 return;
             }
 
+            const challenge = new Uint8Array(32);
+            window.crypto.getRandomValues(challenge);
+
+            try {
+                const credential = await navigator.credentials.create({
+                    publicKey: {
+                        challenge: challenge,
+                        rp: { name: "내 웹사이트" },
+                        user: {
+                            id: new Uint8Array(16),
+                            name: "user@example.com",
+                            displayName: "사용자"
+                        },
+                        pubKeyCredParams: [{ type: "public-key", alg: -7 }],
+                        authenticatorSelection: {
+                            authenticatorAttachment: "platform",
+                            userVerification: "required"
+                        },
+                        timeout: 60000,
+                        attestation: "none"
+                    }
+                });
+
+                if (credential) {
+                    alert("생체 인증 등록 성공!");
+                    localStorage.setItem("credentialId", credential.id);
+                }
+            } catch (error) {
+                alert("생체 인증 등록 실패: " + error.message);
+            }
+        }
+
+        async function authenticate() {
+            if (!window.PublicKeyCredential) {
+                alert("이 브라우저는 WebAuthn을 지원하지 않습니다.");
+                return;
+            }
+
+            const credentialId = localStorage.getItem("credentialId");
+            if (!credentialId) {
+                alert("생체 인증 등록이 필요합니다!");
+                return;
+            }
+
+            const challenge = new Uint8Array(32);
+            window.crypto.getRandomValues(challenge);
+
             try {
                 const credential = await navigator.credentials.get({
                     publicKey: {
-                        challenge: new Uint8Array([1,2,3,4]), // 임시 데이터
-                        allowCredentials: [],
+                        challenge: challenge,
+                        allowCredentials: [{ id: Uint8Array.from(atob(credentialId), c => c.charCodeAt(0)), type: "public-key" }],
                         timeout: 60000,
                         userVerification: "required"
                     }
