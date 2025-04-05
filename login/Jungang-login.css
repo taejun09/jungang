@@ -196,3 +196,26 @@ button:focus, a:focus {
 .custom-alert button:hover {
     background: #555;
 }
+
+select {
+    width: 98%;
+    padding: 12px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 16px;
+    text-align: center;
+    font-family: 'Noto Sans KR';
+    background: #555;
+    color: #ffffff;
+    appearance: none;
+    background-image: url("data:image/svg+xml;utf8,<svg fill='black' height='16' viewBox='0 0 24 24' width='16' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px;
+    cursor: pointer;
+}
+
+select:focus {
+    outline: 2px dashed #000000;
+}
