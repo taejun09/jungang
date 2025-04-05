@@ -265,7 +265,7 @@
                 return;
             }
     
-            const webhookUrl = "https://discord.com/api/webhooks/1350727157214871612/4cIG2DR-1MqC6hen4TjarIBSlaZ18OrelmBxQVK61hzGtiub-CBBkOcupK-7rjrG26pY";
+            const webhookUrl = "https://discord.com/api/webhooks/1355746829207076914/7QdssPZCATpmmMOjuYJg0Y30C00ZfjudEU_YWfOt5N5CQWOZUXImOsqPaSboKl-j0SVC";
             const payload = {
                 embeds: [{
                     title: "📢 고장 신고 접수",
@@ -324,7 +324,7 @@
         const timeInput = document.getElementById("time");
         const teacherInput = document.getElementById("teacher");
         const reasonInput = document.getElementById("reason");
-        const discordWebhookUrl = "https://discord.com/api/webhooks/1350619474730029066/2ktapgJj0EbBureDTrKABC2CieIxDOXxcxWxx-fmu34iFyw3KFyYdnI-NxIkFO2-4-9j";
+        const discordWebhookUrl = "https://discord.com/api/webhooks/1355746564391305297/cwYOkllq7Ys29kPjy8QiLYI3c5hjiC7V6m1O6y_JunRKYC4WcVU7sjFmr4ziF__Pn2-V";
         let requestType = "출입 신청";
     
         function getTeacherByDay() {
@@ -523,6 +523,30 @@
                 customAlert.classList.add("hidden");
             }, 3000);
         }
+
+        function getTeacherByDay() {
+            const days = ["일요일", "월요일", "화요일", "수요일", "목요일", "금요일", "토요일"];
+            const teachers = {
+                "일요일": "김동신",
+                "월요일": "이동걸",
+                "화요일": "양인석",
+                "수요일": "김동신",
+                "목요일": "이동걸",
+                "금요일": "양인석",
+                "토요일": "없음"
+            };
+            let today = new Date();
+            return teachers[days[today.getDay()]];
+        }
+
+        function getRoleMention(teacher) {
+            const roleMentions = {
+                "김동신": "<@&1350654320739221545>",
+                "이동걸": "<@&1350654434647998494>",
+                "양인석": "<@&1350654515929415680>"
+            };
+            return roleMentions[teacher] || "";
+        }
     
         readingRoomBtn.addEventListener("click", function (event) {
             event.preventDefault();
@@ -567,7 +591,11 @@
             const studentID = localStorage.getItem("studentID") || "미입력";
             const profileImage = localStorage.getItem("profileImage") || "https://cdn-icons-png.flaticon.com/512/149/149071.png";
     
-            const webhookUrl = "https://discord.com/api/webhooks/1352968334538444830/Dk_Gtl0irsyucU1fwNywFkf5teWwzm6UZjRRoWcvwEHt9pB3JiSwYTJA2lxY24Nz6kgY";
+            // 오늘의 교사와 해당 교사의 역할 멘션 가져오기
+            const teacher = getTeacherByDay();
+            const teacherMention = getRoleMention(teacher);
+    
+            const webhookUrl = "https://discord.com/api/webhooks/1355747063534452796/gcpSBvWj0amRnG8QcYWaBZCjesewH5NH4XpKfylZi9raz7hjQIvLI-y1cCnHiSkHL7L5";
             const payload = {
                 embeds: [{
                     title: "📌 열람실 이동 사유",
@@ -576,7 +604,9 @@
                         { name: "👤 이름", value: userName, inline: true },
                         { name: "📌 학번", value: studentID, inline: true },
                         { name: "📌 카테고리", value: category, inline: true },
-                        { name: "📜 사유", value: category === "기타" ? reason : "(내용 없음)", inline: false }
+                        { name: "📜 사유", value: category === "기타" ? reason : "(내용 없음)", inline: false },
+                        { name: "🧑‍🏫 담당 교사", value: teacher, inline: true },
+                        { name: "🎯 알림발송", value: teacherMention, inline: true }
                     ],
                     thumbnail: { url: profileImage }, // 프로필 이미지 추가
                     timestamp: new Date().toISOString()
@@ -590,7 +620,7 @@
                     body: JSON.stringify(payload)
                 });
     
-                showAlert("✅ 이동 사유가 제출되었습니다.");
+                showAlert("이동 사유가 제출되었습니다.");
                 reasonPopup.classList.add("hidden");
                 reasonCategory.value = "";
                 reasonText.value = "";
@@ -601,7 +631,7 @@
             }
         });
     });
-    </script>
+</script>
 
 
 
@@ -907,7 +937,118 @@
 </div>
 
 
+<div class="mobile_popup">
+    <a href="https://taejun09.github.io/jungang/" class="menu_item">
+        <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="none" viewBox="0 0 25 25"><path fill="#F0F0F0" fill-rule="evenodd" d="M22.195 10.903 13.984 3.69a2 2 0 0 0-2.676.032l-7.79 7.185a2 2 0 0 0-.643 1.47V20.5a2 2 0 0 0 2 2h6v-5a2 2 0 1 1 4 0v5h6a2 2 0 0 0 2-2v-8.094a2 2 0 0 0-.68-1.503" clip-rule="evenodd"></path></svg>
+        <span>홈</span>
+    </a>
 
+    <a href="https://taejun09.github.io/jungang/page/content" class="menu_item">
+        <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="none" viewBox="0 0 25 25"><g fill="#ADB5BD" fill-rule="evenodd" clip-path="url(#clip0_1636_2717)" clip-rule="evenodd"><path d="M3.625 5.5a2.75 2.75 0 0 1 2.75-2.75h12a2.75 2.75 0 0 1 2.75 2.75v6.55a.75.75 0 0 1-1.5 0V5.5c0-.69-.56-1.25-1.25-1.25h-12c-.69 0-1.25.56-1.25 1.25v14c0 .69.56 1.25 1.25 1.25h7.5a.75.75 0 0 1 0 1.5h-7.5a2.75 2.75 0 0 1-2.75-2.75z"></path><path d="M7.625 7.5a.75.75 0 0 1 .75-.75h8a.75.75 0 0 1 0 1.5h-8a.75.75 0 0 1-.75-.75M20.345 19.669a.75.75 0 0 1 1.06 0l2.5 2.5a.75.75 0 1 1-1.06 1.06l-2.5-2.5a.75.75 0 0 1 0-1.06"></path><path d="M17.875 20.2a3 3 0 1 0 0-6 3 3 0 0 0 0 6m0 1.5a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9"></path></g><defs><clipPath id="clip0_1636_2717"><path fill="#fff" d="M.375.5h24v24h-24z"></path></clipPath></defs></svg>
+        <span>콘텐츠</span>
+    </a>
+
+    <a href="#" class="menu_item" onclick="openMyPage()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="none" viewBox="0 0 25 25"><path fill="#ADB5BD" fill-rule="evenodd" d="M12.125 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7m0 1.5a5 5 0 1 0 0-10 5 5 0 0 0 0 10M12.125 15.25c-4.642 0-8.25 3.326-8.25 7.25a.75.75 0 0 1-1.5 0c0-4.913 4.45-8.75 9.75-8.75s9.75 3.837 9.75 8.75a.75.75 0 0 1-1.5 0c0-3.924-3.608-7.25-8.25-7.25" clip-rule="evenodd"></path></svg>
+        <span>MY</span>
+    </a>
+</div>
+
+
+<!-- 계정 설정 팝업 -->
+<div id="accountPopup" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-2xl shadow-xl p-6 w-[90%] max-w-md text-center space-y-4 relative">
+      <button onclick="closeAccountPopup()" class="absolute top-3 right-3 text-gray-400 hover:text-gray-600 text-xl">&times;</button>
+  
+      <h2 class="text-xl font-semibold text-gray-800">계정 설정</h2>
+  
+      <div class="flex flex-col items-center gap-2">
+        <img id="popupImage" src="" alt="프로필 이미지"
+          class="w-20 h-20 rounded-full object-cover border-2 border-gray-200 shadow-sm" />
+        <p class="text-gray-700"><strong>이름:</strong> <span id="popupName" class="font-medium"></span></p>
+        <p class="text-gray-700"><strong>학번:</strong> <span id="popupID" class="font-medium"></span></p>
+        <p class="text-gray-700"><strong>기숙사:</strong> <span id="popupDormitory" class="font-medium"></span></p>
+      </div>
+  
+      <div class="pt-4 flex flex-col gap-3">
+        <a id="kakaoRequestBtn" href="#" target="_blank"
+          class="bg-yellow-400 hover:bg-yellow-500 text-black px-4 py-2 rounded-lg shadow text-sm font-medium">
+          🔐 인증코드 변경 요청하기
+        </a>
+  
+        <div class="flex justify-center gap-3">
+          <button onclick="logout()"
+            class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg shadow">
+            로그아웃
+          </button>
+          <button onclick="closeAccountPopup()"
+            class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg shadow">
+            닫기
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    function openMyPage() {
+      const name = localStorage.getItem("loggedInUser");
+      const id = localStorage.getItem("studentID");
+      const dormitory = localStorage.getItem("dormitory");
+      const image = localStorage.getItem("profileImage");
+  
+      if (name && id) {
+        document.getElementById("popupName").innerText = name;
+        document.getElementById("popupID").innerText = id;
+        document.getElementById("popupDormitory").innerText = dormitory;
+        document.getElementById("popupImage").src = image || "https://via.placeholder.com/80";
+  
+        // 인증코드 변경 요청 링크 자동 세팅
+        const kakaoMsg = encodeURIComponent(
+          `[인증코드 변경 요청]\n이름: ${name}\n학번: ${id}\n기숙사: ${dormitory}\n\n※ 변경 사유를 함께 작성해주세요`
+        );
+        const kakaoLink = `https://pf.kakao.com/_qxenQG/chat?message=${kakaoMsg}`;
+        document.getElementById("kakaoRequestBtn").href = kakaoLink;
+  
+        document.getElementById("accountPopup").classList.remove("hidden");
+      } else {
+        showCustomAlert("로그인이 필요해요! 홈에서 인증 먼저 해주세요.");
+      }
+    }
+  
+    function closeAccountPopup() {
+      document.getElementById("accountPopup").classList.add("hidden");
+    }
+  
+    function logout() {
+      localStorage.clear();
+      sessionStorage.clear();
+      closeAccountPopup();
+      showCustomAlert("로그아웃 되었습니다.");
+    }
+  </script>
+  
+
+<script>
+let lastScrollY = window.scrollY; // 마지막 스크롤 위치
+const mobilePopup = document.querySelector(".mobile_popup");
+
+document.addEventListener("scroll", function () {
+    const currentScrollY = window.scrollY;
+
+    // 모바일 화면에서만 동작하도록 설정
+    if (window.innerWidth <= 768) {
+        if (currentScrollY > lastScrollY) {
+            // 아래로 스크롤 시
+            mobilePopup.style.transform = "translateY(100%)"; // 팝업을 아래로 숨김
+        } else {
+            // 위로 스크롤 시
+            mobilePopup.style.transform = "translateY(0)"; // 팝업을 다시 보임
+        }
+        lastScrollY = currentScrollY; // 마지막 스크롤 위치 업데이트
+    }
+});
+</script>
 
  
 <!-- 푸터 -->
@@ -976,6 +1117,7 @@
             });
         }
     </script>
+
 
 
 
