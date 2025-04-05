@@ -1086,6 +1086,29 @@ document.addEventListener("scroll", function () {
 });
 </script>
 
+
+<script>
+    let lastActivityTime = Date.now();
+  
+    // 사용자가 활동할 때마다 시간 업데이트
+    document.addEventListener("mousemove", () => lastActivityTime = Date.now());
+    document.addEventListener("keydown", () => lastActivityTime = Date.now());
+    document.addEventListener("touchstart", () => lastActivityTime = Date.now());
+  
+    // 10초마다 체크
+    setInterval(() => {
+      const now = Date.now();
+      const secondsSinceLastActivity = (now - lastActivityTime) / 1000;
+  
+      if (secondsSinceLastActivity > 30) {
+        console.log("활동 없음 → 강력 새로고침");
+        location.reload(true); // 강력 새로고침 (캐시 무시)
+      } else {
+        console.log(`최근 활동: ${Math.floor(secondsSinceLastActivity)}초 전 → 새로고침 안 함`);
+      }
+    }, 10000);
+  </script>
+  
  
 <!-- 푸터 -->
 <footer id="footer" class="bg-[#18181c] py-8 px-4 md:px-12 text-[#D9D9D9] text-sm rounded-lg">
