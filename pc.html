@@ -94,6 +94,12 @@
                                 <br> 열람실 이동 시, 간편하게 제출할 수 있어요!
                             </p>
                         </div>
+                        <div class="svg-grid">
+                            <p class="text">
+                                <i class="fa-solid fa-gamepad" style="color: #000000;"></i> <strong class="bold-span">미니게임</strong>
+                                <br> 친구들과 소소한 미니게임을 즐길수 있어요!
+                            </p>
+                        </div>
                     </div>
                     <div id="jungang-banner-img" class="image-wrap jungang">
                         <img src="https://taejun09.github.io/jungang/assets/image/jungang-stay.png" loading="lazy"  alt=""/>
@@ -143,12 +149,55 @@
             setInterval(changeText, 5000);
           </script>
           
+          <script>
+            let idleTimer;
+            let isUserActive = true;
           
+            // 강력 새로 고침 함수 (캐시 무시)
+            function forceReload() {
+              console.log("10초간 활동 없음 → 강력 새로고침");
+              location.reload(true); // true는 캐시 무시 (단, 일부 브라우저는 무시함)
+              // 보장하려면 아래처럼 query 파라미터로 우회하는 방법도 있음
+              // location.href = location.pathname + '?reload=' + new Date().getTime();
+            }
+          
+            // 사용자 활동 감지 함수
+            function resetIdleTimer() {
+              if (!isUserActive) {
+                console.log("사용자 활동 감지됨. 타이머 초기화");
+              }
+              isUserActive = true;
+              clearTimeout(idleTimer);
+              idleTimer = setTimeout(() => {
+                isUserActive = false;
+          
+                // 현재 창이 **열려 있고**, 사용자 입력이 없었다면 새로고침
+                if (document.visibilityState === 'visible') {
+                  forceReload();
+                }
+              }, 10000); // 10초
+            }
+          
+            // 사용자 활동 이벤트 바인딩
+            ['mousemove', 'scroll', 'keydown', 'click', 'touchstart'].forEach(event => {
+              window.addEventListener(event, resetIdleTimer, { passive: true });
+            });
+          
+            // 페이지가 처음 로드될 때 타이머 시작
+            resetIdleTimer();
+          
+            // 탭이 백그라운드로 전환되었다가 돌아올 때 다시 체크
+            document.addEventListener("visibilitychange", () => {
+              if (document.visibilityState === 'visible') {
+                resetIdleTimer();
+              }
+            });
+          </script>
         
 
                 <div class="footer">
                     <div class="footer-credits">              
-        Copyright © 2025 Taejun. All Rights Reserved.</a>| Powered by <a href="https://school.jbedu.kr/gs-jungang" target="_blank" class="footer-link-span">JUNGANG High School</a>
+        Copyright © 2025. Team NexusWay. All Rights Reserved.</a>| Powered by <a href="https://school.jbedu.kr/gs-jungang" target="_blank" class="footer-link-span">JUNGANG High School</a>
                     </div>
     </body>
 </html>

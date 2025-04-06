@@ -1163,7 +1163,50 @@ document.addEventListener("scroll", function () {
 });
 </script>
 
-
+<script>
+    let idleTimer;
+    let isUserActive = true;
+  
+    // 강력 새로 고침 함수 (캐시 무시)
+    function forceReload() {
+      console.log("10초간 활동 없음 → 강력 새로고침");
+      location.reload(true); // true는 캐시 무시 (단, 일부 브라우저는 무시함)
+      // 보장하려면 아래처럼 query 파라미터로 우회하는 방법도 있음
+      // location.href = location.pathname + '?reload=' + new Date().getTime();
+    }
+  
+    // 사용자 활동 감지 함수
+    function resetIdleTimer() {
+      if (!isUserActive) {
+        console.log("사용자 활동 감지됨. 타이머 초기화");
+      }
+      isUserActive = true;
+      clearTimeout(idleTimer);
+      idleTimer = setTimeout(() => {
+        isUserActive = false;
+  
+        // 현재 창이 **열려 있고**, 사용자 입력이 없었다면 새로고침
+        if (document.visibilityState === 'visible') {
+          forceReload();
+        }
+      }, 10000); // 10초
+    }
+  
+    // 사용자 활동 이벤트 바인딩
+    ['mousemove', 'scroll', 'keydown', 'click', 'touchstart'].forEach(event => {
+      window.addEventListener(event, resetIdleTimer, { passive: true });
+    });
+  
+    // 페이지가 처음 로드될 때 타이머 시작
+    resetIdleTimer();
+  
+    // 탭이 백그라운드로 전환되었다가 돌아올 때 다시 체크
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === 'visible') {
+        resetIdleTimer();
+      }
+    });
+  </script>
 
  
 <!-- 푸터 -->
@@ -1174,7 +1217,7 @@ document.addEventListener("scroll", function () {
             <p class="font-semibold text-[#D9D9D9]">팀 넥서스웨이</p>
             <p>대표: 김태준</p>
             <p>주소: 전북특별자치도 군산시 성산면 군장대길 13</p>
-            <p class="mt-2">© 2025. Team NexusWay.</p>
+            <p class="mt-2">Copyright © 2025. Team NexusWay. All Rights Reserved.</p>
         </div>
 
         <!-- 개인정보 보호 -->
