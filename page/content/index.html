@@ -80,8 +80,7 @@
 
 
 <body>
-    <script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.2/dist/peerjs.min.js"></script>
-    <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.2/dist/peerjs.min.js"></script>
     </head>
    
 
@@ -239,7 +238,7 @@
           <!-- 알림 -->
           <div id="custom-alert"><span id="custom-alert-message">알림</span></div>
       
-          <!-- Restart Popup -->
+          <!-- 팝업 -->
           <div id="restart-popup">
             <h3>한 판 더 하시겠어요?</h3>
             <div class="flex gap-2">
@@ -249,208 +248,291 @@
           </div>
         </div>
       
-      <script>
-        const myIdSpan = document.getElementById("my-id");
-        const connectBtn = document.getElementById("connect-btn");
-        const connectInput = document.getElementById("connect-id");
-        const readyBtn = document.getElementById("ready-btn");
-        const startBtn = document.getElementById("start-btn");
-        const board = document.getElementById("game-board");
-        const alertBox = document.getElementById("custom-alert");
-        const alertMessage = document.getElementById("custom-alert-message");
-        const roundDisplay = document.getElementById("round-num");
-        const myScoreDisplay = document.getElementById("my-score");
-        const enemyScoreDisplay = document.getElementById("enemy-score");
-        const timerBar = document.getElementById("timer-bar");
-        const timerContainer = document.getElementById("timer-bar-container");
+        <script>
+          const myIdSpan = document.getElementById("my-id");
+          const connectBtn = document.getElementById("connect-btn");
+          const connectInput = document.getElementById("connect-id");
+          const readyBtn = document.getElementById("ready-btn");
+          const startBtn = document.getElementById("start-btn");
+          const board = document.getElementById("game-board");
+          const alertBox = document.getElementById("custom-alert");
+          const alertMessage = document.getElementById("custom-alert-message");
+          const roundDisplay = document.getElementById("round-num");
+          const myScoreDisplay = document.getElementById("my-score");
+          const enemyScoreDisplay = document.getElementById("enemy-score");
+          const timerBar = document.getElementById("timer-bar");
+          const timerContainer = document.getElementById("timer-bar-container");
+          const restartPopup = document.getElementById("restart-popup");
       
-        let peer, conn;
-        let isHost = false;
-        let myTurn = false;
-        let myMark = 'O', enemyMark = 'X';
-        let boardState = Array(9).fill(null);
-        let timerDuration = 30;
-        let round = 1, myScore = 0, enemyScore = 0, roundLimit = 3;
-        let timerInterval;
+          let peer, conn;
+          let isHost = false;
+          let myTurn = false;
+          let myMark = 'O', enemyMark = 'X';
+          let boardState = Array(9).fill(null);
+          let timerDuration = 30;
+          let round = 1, myScore = 0, enemyScore = 0, roundLimit = 3;
+          let timerInterval;
+          let restartVotes = { me: false, enemy: false };
       
-        function showAlert(msg) {
-          alertMessage.textContent = msg;
-          alertBox.style.display = "block";
-          setTimeout(() => alertBox.style.display = "none", 2000);
-        }
-      
-        function copyId() {
-          navigator.clipboard.writeText(peer.id);
-          showAlert("ID가 복사되었어요!");
-        }
-      
-        function shareId() {
-          const url = `https://taejun09.github.io/jungang/page/content/${peer.id}`;
-          const message = `[중앙스테이 빙고 게임 초대 링크]\n\n친구가 당신을 빙고 게임에 초대했어요!\n👇 아래 링크를 클릭하면 바로 연결됩니다.\n${url}`;
-          navigator.clipboard.writeText(message);
-          showAlert("공유 링크가 복사되었어요!");
-        }
-      
-        function createBoard() {
-          board.innerHTML = "";
-          boardState = Array(9).fill(null);
-          for (let i = 0; i < 9; i++) {
-            const cell = document.createElement("div");
-            cell.className = "bingo-cell";
-            cell.dataset.index = i;
-            cell.addEventListener("click", () => handleClick(i));
-            board.appendChild(cell);
+          function showAlert(msg) {
+            alertMessage.textContent = msg;
+            alertBox.style.display = "block";
+            setTimeout(() => alertBox.style.display = "none", 2000);
           }
-        }
       
-        function handleClick(i) {
-          if (!myTurn || boardState[i]) return;
-          boardState[i] = myMark;
-          updateBoard();
-          send({ type: "move", index: i });
-          endTurn();
-        }
+          function copyId() {
+            navigator.clipboard.writeText(peer.id);
+            showAlert("ID가 복사되었어요!");
+          }
       
-        function updateBoard() {
-          document.querySelectorAll(".bingo-cell").forEach((cell, i) => {
-            cell.textContent = boardState[i] || "";
-            cell.classList.remove("selected", "enemy", "completed");
-            if (boardState[i] === myMark) cell.classList.add("selected");
-            else if (boardState[i] === enemyMark) cell.classList.add("enemy");
-          });
-          checkWinner();
-        }
+          function shareId() {
+            const url = `https://taejun09.github.io/jungang/page/content/${peer.id}`;
+            const message = `[중앙스테이 빙고 게임 초대 링크]\n\n친구가 당신을 빙고 게임에 초대했어요!\n👇 아래 링크를 클릭하면 바로 연결됩니다.\n${url}`;
+            navigator.clipboard.writeText(message);
+            showAlert("공유 링크가 복사되었어요!");
+          }
       
-        function checkWinner() {
-          const wins = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
-          for (let line of wins) {
-            const [a,b,c] = line;
-            if (boardState[a] && boardState[a] === boardState[b] && boardState[a] === boardState[c]) {
-              line.forEach(i => document.querySelectorAll(".bingo-cell")[i].classList.add("completed"));
-              if (boardState[a] === myMark) {
-                myScore++;
-                showAlert("승리!");
-              } else {
-                enemyScore++;
-                showAlert("상대방 승리!");
-              }
-              nextRound();
-              return;
+          function createBoard() {
+            board.innerHTML = "";
+            boardState = Array(9).fill(null);
+            for (let i = 0; i < 9; i++) {
+              const cell = document.createElement("div");
+              cell.className = "bingo-cell";
+              cell.dataset.index = i;
+              cell.addEventListener("click", () => handleClick(i));
+              board.appendChild(cell);
             }
           }
-          if (!boardState.includes(null)) {
-            showAlert("무승부!");
-            nextRound();
-          }
-        }
       
-        function nextRound() {
-          clearInterval(timerInterval);
-          round++;
-          if (round > roundLimit) {
-            showAlert("게임 종료!");
-            board.style.display = "none";
-            setTimeout(() => {
-              showRestartPopup(); // 팝업 표시
-            }, 1000);
-            return;
-          }
-          roundDisplay.textContent = round;
-          myScoreDisplay.textContent = myScore;
-          enemyScoreDisplay.textContent = enemyScore;
-          createBoard();
-          startTurn(isHost);
-        }
-      
-        function startTurn(turn) {
-          myTurn = turn;
-          timerContainer.style.display = "block";
-          let time = timerDuration;
-          timerBar.style.width = "100%";
-          clearInterval(timerInterval);
-          timerInterval = setInterval(() => {
-            time--;
-            timerBar.style.width = `${(time / timerDuration) * 100}%`;
-            if (time <= 0) {
-              clearInterval(timerInterval);
-              showAlert("시간 초과!");
-              endTurn();
-            }
-          }, 1000);
-        }
-      
-        function endTurn() {
-          myTurn = false;
-          clearInterval(timerInterval);
-          send({ type: "end-turn" });
-        }
-      
-        function send(data) {
-          if (conn?.open) conn.send(data);
-        }
-      
-        function generateId() {
-          const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz0123456789";
-          const rand = () => Array(3).fill(0).map(() => chars[Math.floor(Math.random() * chars.length)]).join("");
-          return `${rand()}-${rand()}-${rand()}`;
-        }
-      
-        function initPeer() {
-          const id = generateId();
-          peer = new Peer(id);
-          peer.on("open", id => myIdSpan.textContent = id);
-          peer.on("connection", connection => {
-            conn = connection;
-            isHost = true;
-            setupConnection();
-            readyBtn.style.display = "block";
-          });
-        }
-      
-        function setupConnection() {
-          conn.on("data", handleData);
-          conn.on("close", () => showAlert("상대방 연결 종료됨"));
-          conn.on("error", () => showAlert("연결 오류 발생"));
-          showAlert("상대방과 연결됨!");
-        }
-      
-        function handleData(data) {
-          if (data.type === "ready") {
-            readyBtn.style.display = "none";
-            if (isHost) startBtn.style.display = "block";
-            showAlert("상대방이 준비 완료");
-          }
-          if (data.type === "move") {
-            boardState[data.index] = enemyMark;
+          function handleClick(i) {
+            if (!myTurn || boardState[i]) return;
+            boardState[i] = myMark;
             updateBoard();
+            send({ type: "move", index: i });
             endTurn();
           }
-          if (data.type === "end-turn") endTurn();
-        }
       
-        function restartGame() {
-          round = 1;
-          myScore = 0;
-          enemyScore = 0;
-          roundDisplay.textContent = round;
-          myScoreDisplay.textContent = myScore;
-          enemyScoreDisplay.textContent = enemyScore;
-          createBoard();
-          startTurn(isHost);
-          const restartPopup = document.getElementById("restart-popup");
-          restartPopup.style.display = "none";
-        }
+          function updateBoard() {
+            document.querySelectorAll(".bingo-cell").forEach((cell, i) => {
+              cell.textContent = boardState[i] || "";
+              cell.classList.remove("selected", "enemy", "completed");
+              if (boardState[i] === myMark) cell.classList.add("selected");
+              else if (boardState[i] === enemyMark) cell.classList.add("enemy");
+            });
+            checkWinner();
+          }
       
-        function endGame() {
-          const restartPopup = document.getElementById("restart-popup");
-          restartPopup.style.display = "none";
-        }
+          function checkWinner() {
+            const wins = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+            for (let line of wins) {
+              const [a,b,c] = line;
+              if (boardState[a] && boardState[a] === boardState[b] && boardState[a] === boardState[c]) {
+                line.forEach(i => document.querySelectorAll(".bingo-cell")[i].classList.add("completed"));
+                if (boardState[a] === myMark) {
+                  myScore++;
+                  showAlert("승리!");
+                } else {
+                  enemyScore++;
+                  showAlert("상대방 승리!");
+                }
+                nextRound();
+                return;
+              }
+            }
+            if (!boardState.includes(null)) {
+              showAlert("무승부!");
+              nextRound();
+            }
+          }
       
-        // 페이지 로드 시 peer 초기화
-        window.onload = initPeer;
-      </script>
+          function nextRound() {
+            clearInterval(timerInterval);
+            round++;
+            if (round > roundLimit) {
+              showAlert("게임 종료!");
+              board.style.display = "none";
+              setTimeout(() => {
+                showRestartPopup();
+              }, 1000);
+              return;
+            }
+            roundDisplay.textContent = round;
+            myScoreDisplay.textContent = myScore;
+            enemyScoreDisplay.textContent = enemyScore;
+            createBoard();
+            startTurn(isHost);
+          }
       
-        </body>
+          function startTurn(turn) {
+            myTurn = turn;
+            timerContainer.style.display = "block";
+            let time = timerDuration;
+            timerBar.style.width = "100%";
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+              time--;
+              timerBar.style.width = `${(time / timerDuration) * 100}%`;
+              if (time <= 0) {
+                clearInterval(timerInterval);
+                showAlert("시간 초과!");
+                endTurn();
+              }
+            }, 1000);
+          }
+      
+          function endTurn() {
+            myTurn = false;
+            clearInterval(timerInterval);
+            send({ type: "end-turn" });
+          }
+      
+          function send(data) {
+            if (conn?.open) conn.send(data);
+          }
+      
+          function generateId() {
+            const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz0123456789";
+            const rand = () => Array(3).fill(0).map(() => chars[Math.floor(Math.random() * chars.length)]).join("");
+            return `${rand()}-${rand()}-${rand()}`;
+          }
+      
+          function initPeer() {
+            const id = generateId();
+            peer = new Peer(id);
+            peer.on("open", id => myIdSpan.textContent = id);
+            peer.on("connection", connection => {
+              conn = connection;
+              isHost = true;
+              setupConnection();
+              readyBtn.style.display = "block";
+            });
+      
+            // 자동 연결 기능
+            const urlParts = window.location.pathname.split("/");
+            const lastSegment = urlParts[urlParts.length - 1];
+            if (/^[\w\-]+$/.test(lastSegment) && lastSegment.length > 5) {
+              connectInput.value = lastSegment;
+              setTimeout(() => connectBtn.click(), 1000);
+            }
+          }
+      
+          function setupConnection() {
+            conn.on("data", handleData);
+            conn.on("close", () => showAlert("상대방 연결 종료됨"));
+            conn.on("error", () => showAlert("연결 오류 발생"));
+            showAlert("상대방과 연결됨!");
+          }
+      
+          function handleData(data) {
+            if (data.type === "ready") {
+              readyBtn.style.display = "none";
+              if (isHost) startBtn.style.display = "block";
+              showAlert("상대방이 준비 완료");
+            }
+            if (data.type === "start-game") {
+              timerDuration = data.timerDuration;
+              roundLimit = data.roundLimit;
+      
+              startBtn.style.display = "none";
+              document.getElementById("game-info").style.display = "block";
+              board.style.display = "grid";
+              createBoard();
+      
+              roundDisplay.textContent = round;
+              myScoreDisplay.textContent = myScore;
+              enemyScoreDisplay.textContent = enemyScore;
+      
+              startTurn(isHost);
+            }
+            if (data.type === "move") {
+              boardState[data.index] = enemyMark;
+              updateBoard();
+              endTurn();
+            }
+            if (data.type === "end-turn") endTurn();
+            if (data.type === "restart-vote") {
+              restartVotes.enemy = data.vote;
+              checkRestart();
+            }
+            if (data.type === "end-game") {
+              showAlert("상대방이 게임을 종료했어요");
+              restartPopup.style.display = "none";
+            }
+          }
+      
+          function restartGame() {
+            restartVotes.me = true;
+            send({ type: "restart-vote", vote: true });
+            checkRestart();
+          }
+      
+          function endGame() {
+            restartPopup.style.display = "none";
+            send({ type: "end-game" });
+          }
+      
+          function checkRestart() {
+            if (restartVotes.me && restartVotes.enemy) {
+              restartPopup.style.display = "none";
+              round = 1;
+              myScore = 0;
+              enemyScore = 0;
+              roundDisplay.textContent = round;
+              myScoreDisplay.textContent = myScore;
+              enemyScoreDisplay.textContent = enemyScore;
+              createBoard();
+              startTurn(isHost);
+              restartVotes = { me: false, enemy: false };
+            }
+          }
+      
+          function showRestartPopup() {
+            restartVotes = { me: false, enemy: false };
+            restartPopup.style.display = "block";
+          }
+      
+          connectBtn.addEventListener("click", () => {
+            const targetId = connectInput.value.trim();
+            if (!targetId) return showAlert("상대방 ID를 입력해주세요!");
+            conn = peer.connect(targetId);
+            isHost = false;
+      
+            conn.on("open", () => {
+              setupConnection();
+              readyBtn.style.display = "block";
+            });
+      
+            conn.on("error", () => showAlert("연결 오류 발생"));
+          });
+      
+          readyBtn.addEventListener("click", () => {
+            send({ type: "ready" });
+            readyBtn.style.display = "none";
+            showAlert("준비 완료!");
+          });
+      
+          startBtn.addEventListener("click", () => {
+            startBtn.style.display = "none";
+            document.getElementById("game-info").style.display = "block";
+            board.style.display = "grid";
+            createBoard();
+      
+            const timerInput = document.getElementById("timer-setting").value;
+            const roundInput = document.getElementById("round-setting").value;
+            timerDuration = parseInt(timerInput) || 30;
+            roundLimit = parseInt(roundInput) || 3;
+      
+            roundDisplay.textContent = round;
+            myScoreDisplay.textContent = myScore;
+            enemyScoreDisplay.textContent = enemyScore;
+      
+            startTurn(isHost);
+            send({ type: "start-game", timerDuration, roundLimit });
+          });
+      
+          window.onload = initPeer;
+        </script>
+      </body>
 
 
 
